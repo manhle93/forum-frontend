@@ -16,6 +16,7 @@ class User {
         const user_name = data.user_name
         if (Token.isValid(access_token)) {
             AppStorage.store(user_name, access_token)
+            window.location = '/'
         }
     }
     hasToken() {
@@ -31,6 +32,7 @@ class User {
     logout() {
         if (this.loggedIn()) {
             AppStorage.clear()
+            window.location = '/'
         } else return
     }
     name(){
