@@ -1,0 +1,166 @@
+<template>
+  <div>
+    <v-carousel>
+      <v-carousel-item
+        v-for="(item,i) in items"
+        :key="i"
+        :src="item.src"
+        reverse-transition="fade-transition"
+        transition="fade-transition"
+      >
+        <v-row class="fill-height" align="center" justify="center">
+          <div class="display-3" style="color: white">Slide</div>
+        </v-row>
+      </v-carousel-item>
+    </v-carousel>
+    <br />
+    <div style="text-align: center; font-size: 30px; color: #2980B9; font-weight: bold">Chủ đề</div>
+    <br />
+    <v-container>
+      <v-card style="border-radius: 20px; padding: 40px; background-color: #154360" min-height="600px">
+      <v-row>
+        <v-col v-for="chuDe in dataChuDe" :key="chuDe.id" xl="2" lg="3" md="4" sm="6">
+          <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
+            <v-img
+              class="white--text align-end"
+              height="150px"
+              v-if="chuDe.anh_dai_dien"
+              :src="chuDe.anh_dai_dien"
+            >
+              <v-card-title>{{chuDe.ten}}</v-card-title>
+            </v-img>
+            <v-img class="white--text align-end" height="150px" v-else src="../../assets/chuDe.jpg">
+              <v-card-title>{{chuDe.ten}}</v-card-title>
+            </v-img>
+            <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
+            <v-btn color="orange" text>Xem</v-btn>
+          </v-card>
+        </v-col>
+      </v-row>
+      <div class="text-center" style="position: absolute; bottom: 20px; width: 100%; align-content: center">
+        <v-pagination v-model="pageChuDe" :length="totalPageChuDe" circle @input="PaginateChuDe"></v-pagination>
+      </div>
+      </v-card>
+    </v-container>
+    <br />
+    <br />
+    <v-container>
+      <div style="font-size: 20px; color: #2980B9; font-weight: bold">Câu hỏi cần bạn giúp</div>
+      <br />
+      <v-card style="border-radius: 20px; padding: 40px">
+        <div style="display: flex;" v-for="hoi in hoiDap" :key="hoi.id">
+          <div style=" height: 200px">
+            <img
+              src="https://cafebiz.cafebizcdn.vn/thumb_w/600/2019/10/7/photo-1-157041437488834633779-crop-1570415010946781773486.png"
+              style="width: 250px; max-height: 200px"
+            />
+          </div>
+          <div style="height: auto; padding-left: 30px">
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
+            <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
+            <div style="display: flex;  align-items: flex-end">
+              <div style="flex-grow: 1; height: 40px">
+                <v-list-item-avatar v-if="hoi.user" style="max-width: 100%; max-height: 100%">
+                  <v-img v-if="hoi.user.anh_dai_dien" :src="hoi.user.anh_dai_dien"></v-img>
+                  <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                </v-list-item-avatar>
+              </div>
+              <div style="flex-grow: 50;" v-if="hoi.user">{{hoi.user.name}} Lúc {{hoi.created_at}}</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center">
+          <v-btn color="primary">Xem thêm</v-btn>
+        </div>
+      </v-card>
+    </v-container>
+    <v-container class="mt-6">
+      <div style="font-size: 20px; color: #2980B9; font-weight: bold">Bài viết mới cập nhật</div>
+      <br />
+      <v-card style="border-radius: 20px; padding: 40px">
+        <div style="display: flex;" v-for="bv in baiViet" :key="bv.id">
+          <div style=" height: 200px">
+            <img
+              src="https://cafebiz.cafebizcdn.vn/thumb_w/600/2019/10/7/photo-1-157041437488834633779-crop-1570415010946781773486.png"
+              style="width: 250px; max-height: 200px"
+            />
+          </div>
+          <div style="height: auto; padding-left: 30px">
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
+            <div style="margin-bottom: 15px">{{bv.noi_dung}}</div>
+            <div style="display: flex;  align-items: flex-end">
+              <div style="flex-grow: 1; height: 40px">
+                <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
+                  <v-img v-if="bv.user.anh_dai_dien" :src="bv.user.anh_dai_dien"></v-img>
+                  <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                </v-list-item-avatar>
+              </div>
+              <div style="flex-grow: 50;" v-if="bv.user">{{bv.user.name}} Lúc {{bv.created_at}}</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center">
+          <v-btn color="primary">Xem thêm</v-btn>
+        </div>
+      </v-card>
+    </v-container>
+  </div>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      pageChuDe: 1,
+      totalPageChuDe: 1,
+      dataChuDe: [],
+      items: [
+        {
+          src: "https://cdn.vuetifyjs.com/images/carousel/squirrel.jpg"
+        },
+        {
+          src: "https://cdn.vuetifyjs.com/images/carousel/sky.jpg"
+        },
+        {
+          src: "https://cdn.vuetifyjs.com/images/carousel/bird.jpg"
+        },
+        {
+          src: "https://cdn.vuetifyjs.com/images/carousel/planet.jpg"
+        }
+      ],
+      hoiDap: [],
+      baiViet: []
+    };
+  },
+  created() {
+    this.getChuDe();
+    this.getBaiViet();
+  },
+  methods: {
+    async PaginateChuDe() {
+      try {
+        let data = await axios.get(url + "/chude?page=" + this.pageChuDe);
+        this.dataChuDe = data.data.data.data;
+        this.pageChuDe = data.data.data.current_page;
+        this.totalPageChuDe = data.data.data.last_page;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async getChuDe() {
+      try {
+        let data = await axios.get(url + "/chude");
+        this.dataChuDe = data.data.data.data;
+        this.pageChuDe = data.data.data.current_page;
+        this.totalPageChuDe = data.data.data.last_page;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async getBaiViet() {
+      let data = await axios.get(url + "/baiviettrangchu");
+      this.hoiDap = data.data.hoiDap;
+      this.baiViet = data.data.baiViet;
+    }
+  }
+};
+</script>
