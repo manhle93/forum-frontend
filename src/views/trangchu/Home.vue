@@ -17,29 +17,69 @@
     <div style="text-align: center; font-size: 30px; color: #2980B9; font-weight: bold">Chủ đề</div>
     <br />
     <v-container>
-      <v-card style="border-radius: 20px; padding: 40px; background-color: #154360" min-height="600px">
-      <v-row>
-        <v-col v-for="chuDe in dataChuDe" :key="chuDe.id" xl="2" lg="3" md="4" sm="6">
-          <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
-            <v-img
-              class="white--text align-end"
-              height="150px"
-              v-if="chuDe.anh_dai_dien"
-              :src="chuDe.anh_dai_dien"
-            >
-              <v-card-title>{{chuDe.ten}}</v-card-title>
-            </v-img>
-            <v-img class="white--text align-end" height="150px" v-else src="../../assets/chuDe.jpg">
-              <v-card-title>{{chuDe.ten}}</v-card-title>
-            </v-img>
-            <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
-            <v-btn color="orange" text>Xem</v-btn>
-          </v-card>
-        </v-col>
-      </v-row>
-      <div class="text-center" style="position: absolute; bottom: 20px; width: 100%; align-content: center">
-        <v-pagination v-model="pageChuDe" :length="totalPageChuDe" circle @input="PaginateChuDe"></v-pagination>
-      </div>
+      <v-card
+        style="border-radius: 20px; padding: 40px; background-color: #154360"
+        min-height="600px"
+      >
+        <v-row>
+          <v-col v-for="chuDe in dataChuDe" :key="chuDe.id" xl="2" lg="3" md="4" sm="6">
+            <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
+              <v-img
+                class="white--text align-end"
+                height="150px"
+                v-if="chuDe.anh_dai_dien"
+                :src="chuDe.anh_dai_dien"
+              >
+                <v-card-title>{{chuDe.ten}}</v-card-title>
+              </v-img>
+              <v-img
+                class="white--text align-end"
+                height="150px"
+                v-else
+                src="../../assets/chuDe.jpg"
+              >
+                <v-card-title>{{chuDe.ten}}</v-card-title>
+              </v-img>
+              <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
+              <v-btn color="orange" text>Xem</v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
+        <div
+          class="text-center"
+          style="position: absolute; bottom: 20px; width: 100%; align-content: center"
+        >
+          <v-pagination v-model="pageChuDe" :length="totalPageChuDe" circle @input="PaginateChuDe"></v-pagination>
+        </div>
+      </v-card>
+    </v-container>
+    <v-container>
+      <v-card shaped>
+        <v-card-title style="background-color: blue">Viết bài mới <v-btn class="ml-3">asdadsa</v-btn></v-card-title>
+        <v-card-text class="pt-3">
+          <v-textarea solo flat no-resize label="Nội dung"></v-textarea>
+        </v-card-text>
+        <v-card-actions>
+          <div>
+            <v-layout class="pl-3">
+              <v-select v-select dense :items="items" label="Solo field" solo></v-select>
+              <v-radio-group v-model="row" row dense class="ml-12 mt-2">
+                <v-radio label="Option 1" value="radio-1"></v-radio>
+                <v-radio label="Option 2" value="radio-2"></v-radio>
+              </v-radio-group>
+            </v-layout>
+          </div>
+          <v-spacer />
+          <v-layout class="pb-3 pr-3">
+            <v-spacer/>
+            <v-btn style="color: white" color="purple" class="mr-2">
+              <v-icon left dark>mdi-pencil</v-icon>Viết bài dài
+            </v-btn>
+            <v-btn color="primary">
+              <v-icon left dark>mdi-plus</v-icon>Đăng
+            </v-btn>
+          </v-layout>
+        </v-card-actions>
       </v-card>
     </v-container>
     <br />
@@ -56,7 +96,9 @@
             />
           </div>
           <div style="height: auto; padding-left: 30px">
-            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
+            <router-link :to="'baiviet/'+ hoi.id">
+              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
+            </router-link>
             <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
@@ -65,7 +107,7 @@
                   <v-img v-else src="../../assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
               </div>
-              <div style="flex-grow: 50;" v-if="hoi.user">{{hoi.user.name}} Lúc {{hoi.created_at}}</div>
+              <div style="flex-grow: 50;" v-if="hoi.user">{{hoi.user.name}} {{hoi.created_at}}</div>
             </div>
           </div>
         </div>
@@ -95,7 +137,7 @@
                   <v-img v-else src="../../assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
               </div>
-              <div style="flex-grow: 50;" v-if="bv.user">{{bv.user.name}} Lúc {{bv.created_at}}</div>
+              <div style="flex-grow: 50;" v-if="bv.user">{{bv.user.name}} {{bv.created_at}}</div>
             </div>
           </div>
         </div>

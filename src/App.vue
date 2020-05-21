@@ -51,8 +51,9 @@
       </v-menu>
       <v-btn v-if="loggedIn" class="ma-2" tile outlined color="white" height="30px">{{name}}</v-btn>
     </v-app-bar>
-    <v-content>
+    <v-content style="background: #80808030">
       <router-view />
+      <img src="../src/assets/footer.png" style="width: 100%; margin-top: 150px">
     </v-content>
   </v-app>
 </template>
