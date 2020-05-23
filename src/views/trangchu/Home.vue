@@ -203,7 +203,7 @@ export default {
   methods: {
     async PaginateChuDe() {
       try {
-        let data = await axios.get(url + "/chude?page=" + this.pageChuDe);
+        let data = await axios.get("/chude?page=" + this.pageChuDe);
         this.dataChuDe = data.data.data.data;
         this.pageChuDe = data.data.data.current_page;
         this.totalPageChuDe = data.data.data.last_page;
@@ -213,7 +213,7 @@ export default {
     },
     async getChuDe() {
       try {
-        let data = await axios.get(url + "/chude");
+        let data = await axios.get("/chude");
         this.dataChuDe = data.data.data.data;
         this.pageChuDe = data.data.data.current_page;
         this.totalPageChuDe = data.data.data.last_page;
@@ -222,13 +222,13 @@ export default {
       }
     },
     async getBaiViet() {
-      let data = await axios.get(url + "/baiviettrangchu");
+      let data = await axios.get("/baiviettrangchu");
       this.hoiDap = data.data.hoiDap;
       this.baiViet = data.data.baiViet;
     },
     async getChuDeBaiViet() {
       try {
-        let data = await axios.get(url + "/chude?Perpage=999");
+        let data = await axios.get("/chude?Perpage=999");
         this.chuDes = data.data.data.data;
         console.log(this.chuDes);
       } catch (error) {
@@ -236,11 +236,9 @@ export default {
       }
     },
     async dangBai() {
-      try {
-        let data =  axios.get(url+ '/test')
-      } catch (error) {
-        console.log(222, error);
-      }
+      const accessToken = localStorage.getItem("token");
+      console.log(accessToken);
+      await axios.get("/test");
     },
     resetBaiViet() {
       this.form = {
