@@ -54,28 +54,43 @@
       </v-card>
     </v-container>
     <v-container>
-      <v-card shaped>
-        <v-card-title style="background-color: blue">Viết bài mới <v-btn class="ml-3">asdadsa</v-btn></v-card-title>
+      <v-card style="border-radius: 20px">
+        <v-card-title style="background-color: #1F618D; color: white">
+          Viết bài mới
+          <v-btn class="ml-3">
+            <v-icon left dark>mdi-image-area</v-icon>Hình ảnh
+          </v-btn>
+        </v-card-title>
         <v-card-text class="pt-3">
-          <v-textarea solo flat no-resize label="Nội dung"></v-textarea>
+          <v-text-field v-model="form.tieu_de" label="Tiêu đề" single-line></v-text-field>
+          <v-textarea v-model="form.noi_dung" solo flat no-resize label="Nội dung"></v-textarea>
         </v-card-text>
+        <v-card-text></v-card-text>
         <v-card-actions>
           <div>
             <v-layout class="pl-3">
-              <v-select v-select dense :items="items" label="Solo field" solo></v-select>
-              <v-radio-group v-model="row" row dense class="ml-12 mt-2">
-                <v-radio label="Option 1" value="radio-1"></v-radio>
-                <v-radio label="Option 2" value="radio-2"></v-radio>
+              <v-select
+                v-model="form.chu_de_id"
+                dense
+                :items="chuDes"
+                label="Chọn chủ đề"
+                item-text="ten"
+                item-value="id"
+                solo
+              ></v-select>
+              <v-radio-group v-model="form.loai" row dense class="ml-12 mt-2">
+                <v-radio label="Bài viết" value="bai_viet"></v-radio>
+                <v-radio label="Hỏi đáp" value="hoi_dap"></v-radio>
               </v-radio-group>
             </v-layout>
           </div>
           <v-spacer />
           <v-layout class="pb-3 pr-3">
-            <v-spacer/>
+            <v-spacer />
             <v-btn style="color: white" color="purple" class="mr-2">
               <v-icon left dark>mdi-pencil</v-icon>Viết bài dài
             </v-btn>
-            <v-btn color="primary">
+            <v-btn color="primary" @click="dangBai">
               <v-icon left dark>mdi-plus</v-icon>Đăng
             </v-btn>
           </v-layout>
@@ -170,12 +185,20 @@ export default {
         }
       ],
       hoiDap: [],
-      baiViet: []
+      baiViet: [],
+      form: {
+        tieu_de: "",
+        noi_dung: "",
+        chu_de_id: null,
+        loai: "bai_viet"
+      },
+      chuDes: []
     };
   },
   created() {
     this.getChuDe();
     this.getBaiViet();
+    this.getChuDeBaiViet();
   },
   methods: {
     async PaginateChuDe() {
@@ -202,6 +225,30 @@ export default {
       let data = await axios.get(url + "/baiviettrangchu");
       this.hoiDap = data.data.hoiDap;
       this.baiViet = data.data.baiViet;
+    },
+    async getChuDeBaiViet() {
+      try {
+        let data = await axios.get(url + "/chude?Perpage=999");
+        this.chuDes = data.data.data.data;
+        console.log(this.chuDes);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async dangBai() {
+      try {
+        let data =  axios.get(url+ '/test')
+      } catch (error) {
+        console.log(222, error);
+      }
+    },
+    resetBaiViet() {
+      this.form = {
+        tieu_de: "",
+        noi_dung: "",
+        chu_de_id: null,
+        loai: "bai_viet"
+      };
     }
   }
 };
