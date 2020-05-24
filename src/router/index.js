@@ -24,6 +24,11 @@ Vue.use(VueRouter)
     path: '/baiviet/:id',
     name: 'BaiViet',
     component: () => import("../views/baiviet/baiviet"),
+  },
+  {
+    path: '/vietbai',
+    name: 'BaiViet',
+    component: () => import("../views/baiviet/vietbaidai"),
   }
 ]
 

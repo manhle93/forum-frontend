@@ -1,5 +1,6 @@
 <template>
   <div>
+     <v-snackbar top color="success" v-model="snackbar">Đăng bài thành công</v-snackbar>
     <v-carousel>
       <v-carousel-item
         v-for="(item,i) in items"
@@ -87,9 +88,11 @@
           <v-spacer />
           <v-layout class="pb-3 pr-3">
             <v-spacer />
+            <router-link to="/vietbai">
             <v-btn style="color: white" color="purple" class="mr-2">
               <v-icon left dark>mdi-pencil</v-icon>Viết bài dài
             </v-btn>
+            </router-link>
             <v-btn color="primary" @click="dangBai">
               <v-icon left dark>mdi-plus</v-icon>Đăng
             </v-btn>
@@ -186,6 +189,7 @@ export default {
       ],
       hoiDap: [],
       baiViet: [],
+      snackbar: false,
       form: {
         tieu_de: "",
         noi_dung: "",
@@ -236,9 +240,14 @@ export default {
       }
     },
     async dangBai() {
-      const accessToken = localStorage.getItem("token");
-      console.log(accessToken);
-      await axios.get("/test");
+      try {
+        await axios.post("/baiviet", this.form);
+        this.snackbar = true
+        this.resetBaiViet()
+        this.getBaiViet()
+      } catch (error) {
+        console.log(error);
+      }
     },
     resetBaiViet() {
       this.form = {

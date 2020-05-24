@@ -12,6 +12,11 @@ window.User = User;
 window.url = url;
 Vue.config.productionTip = false;
 
+import VueSimplemde from 'vue-simplemde'
+import 'simplemde/dist/simplemde.min.css'
+
+Vue.component('vue-simplemde', VueSimplemde)
+
 new Vue({
   router,
   store,
