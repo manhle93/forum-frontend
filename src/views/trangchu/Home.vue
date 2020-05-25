@@ -1,6 +1,7 @@
 <template>
   <div>
-     <v-snackbar top color="success" v-model="snackbar">Đăng bài thành công</v-snackbar>
+    <v-snackbar top color="success" v-model="snackbar">Đăng bài thành công</v-snackbar>
+    <v-snackbar top color="warning" v-model="uploadLoi">{{loiUpload}}</v-snackbar>
     <v-carousel>
       <v-carousel-item
         v-for="(item,i) in items"
@@ -58,13 +59,29 @@
       <v-card style="border-radius: 20px">
         <v-card-title style="background-color: #1F618D; color: white">
           Viết bài mới
-          <v-btn class="ml-3">
+          <input
+            ref="upload-image"
+            class="upload-image"
+            type="file"
+            @change="handleChange($event)"
+          />
+          <v-btn class="ml-3" @click="uploadAnh">
             <v-icon left dark>mdi-image-area</v-icon>Hình ảnh
           </v-btn>
+          <div style="width: 70px; height: 50px" class="ml-10 mb-4" v-if="form.anh_dai_dien">
+            <v-img :src="form.anh_dai_dien" width="100%"></v-img>
+          </div>
         </v-card-title>
         <v-card-text class="pt-3">
-          <v-text-field v-model="form.tieu_de" label="Tiêu đề" single-line></v-text-field>
-          <v-textarea v-model="form.noi_dung" solo flat no-resize label="Nội dung"></v-textarea>
+          <v-text-field v-model="form.tieu_de" label="Tiêu đề" single-line :rules="tieuDeRules"></v-text-field>
+          <v-textarea
+            v-model="form.noi_dung"
+            solo
+            flat
+            no-resize
+            label="Nội dung"
+            :rules="noiDungRules"
+          ></v-textarea>
         </v-card-text>
         <v-card-text></v-card-text>
         <v-card-actions>
@@ -78,6 +95,7 @@
                 item-text="ten"
                 item-value="id"
                 solo
+                :rules="chuDeRules"
               ></v-select>
               <v-radio-group v-model="form.loai" row dense class="ml-12 mt-2">
                 <v-radio label="Bài viết" value="bai_viet"></v-radio>
@@ -89,9 +107,9 @@
           <v-layout class="pb-3 pr-3">
             <v-spacer />
             <router-link to="/vietbai">
-            <v-btn style="color: white" color="purple" class="mr-2">
-              <v-icon left dark>mdi-pencil</v-icon>Viết bài dài
-            </v-btn>
+              <v-btn style="color: white" color="purple" class="mr-2">
+                <v-icon left dark>mdi-pencil</v-icon>Viết bài dài
+              </v-btn>
             </router-link>
             <v-btn color="primary" @click="dangBai">
               <v-icon left dark>mdi-plus</v-icon>Đăng
@@ -109,9 +127,12 @@
         <div style="display: flex;" v-for="hoi in hoiDap" :key="hoi.id">
           <div style=" height: 200px">
             <img
-              src="https://cafebiz.cafebizcdn.vn/thumb_w/600/2019/10/7/photo-1-157041437488834633779-crop-1570415010946781773486.png"
-              style="width: 250px; max-height: 200px"
+              v-if="hoi.anh_dai_dien"
+              :src="hoi.anh_dai_dien"
+              style="width: 250px; max-height: 170px"
             />
+
+            <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
           <div style="height: auto; padding-left: 30px">
             <router-link :to="'baiviet/'+ hoi.id">
@@ -141,13 +162,18 @@
         <div style="display: flex;" v-for="bv in baiViet" :key="bv.id">
           <div style=" height: 200px">
             <img
-              src="https://cafebiz.cafebizcdn.vn/thumb_w/600/2019/10/7/photo-1-157041437488834633779-crop-1570415010946781773486.png"
-              style="width: 250px; max-height: 200px"
+              v-if="bv.anh_dai_dien"
+              :src="bv.anh_dai_dien"
+              style="width: 250px; max-height: 170px"
             />
+
+            <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
           <div style="height: auto; padding-left: 30px">
-            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
-            <div style="margin-bottom: 15px">{{bv.noi_dung}}</div>
+            <router-link :to="'baiviet/'+ bv.id">
+              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
+            </router-link>
+            <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
                 <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
@@ -167,6 +193,8 @@
   </div>
 </template>
 <script>
+import md from "marked";
+
 export default {
   data() {
     return {
@@ -194,9 +222,22 @@ export default {
         tieu_de: "",
         noi_dung: "",
         chu_de_id: null,
-        loai: "bai_viet"
+        loai: "bai_viet",
+        anh_dai_dien: null
       },
-      chuDes: []
+      uploadLoi: false,
+      loiUpload: "",
+      chuDes: [],
+      chuDes: [],
+      tieuDeRules: [
+        v => !!v || "Tiêu đề không thể bỏ trống",
+        v => (v && v.length >= 5) || "Tên tối thiểu 5 ký tự"
+      ],
+      chuDeRules: [v => !!v || "Chủ đề không thể bỏ trống"],
+      noiDungRules: [
+        v => !!v || "Nội dung không thể bỏ trống",
+        v => (v && v.length >= 10) || "Nội dung tối thiểu 10 ký tự"
+      ]
     };
   },
   created() {
@@ -234,7 +275,6 @@ export default {
       try {
         let data = await axios.get("/chude?Perpage=999");
         this.chuDes = data.data.data.data;
-        console.log(this.chuDes);
       } catch (error) {
         console.log(error);
       }
@@ -242,9 +282,9 @@ export default {
     async dangBai() {
       try {
         await axios.post("/baiviet", this.form);
-        this.snackbar = true
-        this.resetBaiViet()
-        this.getBaiViet()
+        this.snackbar = true;
+        this.resetBaiViet();
+        this.getBaiViet();
       } catch (error) {
         console.log(error);
       }
@@ -254,9 +294,52 @@ export default {
         tieu_de: "",
         noi_dung: "",
         chu_de_id: null,
-        loai: "bai_viet"
+        loai: "bai_viet",
+        anh_dai_dien: null
       };
+    },
+    parseText(text) {
+      if (text) {
+        return md.parse(text);
+      } else return null;
+    },
+    handleChange(e) {
+      let files = e.target.files;
+      let data = new FormData();
+      data.append("file", files[0]);
+
+      var filePath = files[0].name.split(".").pop(); //lấy định dạng file
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      const isLt2M = files[0].size / 1024 / 1024 < 20;
+      if (!isLt2M) {
+        this.loiUpload = "Kích thước tập tin tối đa 20MB";
+        this.uploadLoi = true;
+        return false;
+      }
+      if (!dinhDangChoPhep.find(el => el == filePath)) {
+        this.loiUpload = "Định dạng file không hợp lệ, hãy upload file ảnh";
+        this.uploadLoi = true;
+        return;
+      } else {
+        axios
+          .post("/uploadanh", data)
+          .then(res => {
+            this.form.anh_dai_dien = ImageUrl + "/" + res.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
+    },
+    uploadAnh() {
+      this.$refs["upload-image"].click();
     }
   }
 };
 </script>
+<style scoped>
+.upload-image {
+  display: none;
+  z-index: -9999;
+}
+</style>

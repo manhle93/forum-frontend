@@ -1,7 +1,6 @@
 <template>
   <v-container>
     <v-snackbar top color="success" v-model="snackbar">Đăng bài thành công</v-snackbar>
-    <v-snackbar top color="warning" v-model="uploadLoi">{{loiUpload}}</v-snackbar>
     <v-card>
       <v-card-title>Viết bài</v-card-title>
       <v-form ref="form">
@@ -33,21 +32,13 @@
             </v-radio-group>
           </div>
           <v-layout class="mb-6">
-            <v-btn small @click="uploadAnh">
-              <input
-                ref="upload-image"
-                class="upload-image"
-                type="file"
-                @change="handleChange($event)"
-              />
+            <v-btn small>
               <v-icon left dark>mdi-image-area</v-icon>Upload Ảnh đại diện
             </v-btn>
-            <img
-              v-if="form.anh_dai_dien"
-              :src="form.anh_dai_dien"
+            <div
               style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
               class="ml-6"
-            />
+            ></div>
           </v-layout>
           <vue-simplemde v-model="form.noi_dung" :rules="noiDungRules" />
         </v-card-text>
@@ -72,12 +63,9 @@ export default {
       tieu_de: "",
       chu_de_id: null,
       loai: "bai_viet",
-      noi_dung: "",
-      anh_dai_dien: null
+      noi_dung: ""
     },
     snackbar: false,
-    uploadLoi: false,
-    loiUpload: "",
     chuDes: [],
     tieuDeRules: [
       v => !!v || "Tiêu đề không thể bỏ trống",
@@ -101,10 +89,21 @@ export default {
         console.log(error);
       }
     },
+    async getBaiViet() {
+      let data = await axios.get("/baiviet/" + this.$route.params.id);
+      if(!User.own(data.data.user_id)){
+        this.$router.push('/')
+        return
+      }
+      this.form.tieu_de = data.data.tieu_de;
+      this.form.noi_dung = data.data.noi_dung;
+      this.form.chu_de_id = data.data.chu_de_id;
+      this.form.loai = data.data.loai;
+    },
     async dangBai() {
       if (this.$refs.form.validate()) {
         try {
-          await axios.post("/baiviet", this.form);
+          await axios.put(`/baiviet/${this.$route.params.id}`, this.form);
           this.snackbar = true;
           this.resetForm();
         } catch (error) {
@@ -119,44 +118,12 @@ export default {
         tieu_de: "",
         chu_de_id: null,
         loai: "bai_viet",
-        noi_dung: "",
-        anh_dai_dien: null
+        noi_dung: ""
       };
-    },
-    handleChange(e) {
-      let files = e.target.files;
-      let data = new FormData();
-      data.append("file", files[0]);
-
-      var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
-      const isLt2M = files[0].size / 1024 / 1024 < 20;
-      if (!isLt2M) {
-        this.loiUpload = "Kích thước tập tin tối đa 20MB"
-        this.uploadLoi = true
-        return false;
-      }
-      if (!dinhDangChoPhep.find(el => el == filePath)) {
-        this.loiUpload = "Định dạng file không hợp lệ, hãy upload file ảnh"
-        this.uploadLoi = true
-        return;
-      } else {
-        axios
-          .post("/uploadanh", data)
-          .then(res => {
-            this.form.anh_dai_dien = ImageUrl + '/' + res.data;
-            console.log(this.form.anh_dai_dien, res);
-          })
-          .catch(error => {
-            console.log(error);
-          });
-      }
-    },
-    uploadAnh() {
-      this.$refs["upload-image"].click();
     }
   },
   created() {
+    this.getBaiViet();
     this.getChuDeBaiViet();
   }
 };
@@ -164,8 +131,4 @@ export default {
 <style scoped>
 @import "~simplemde/dist/simplemde.min.css";
 @import "~github-markdown-css";
-.upload-image {
-  display: none;
-  z-index: -9999;
-}
 </style>

@@ -95,7 +95,7 @@ export default {
     ],
     nameRules: [
       v => !!v || "Tên không thể bỏ trống",
-      v => (v && v.length >= 2) || "Mật khẩu tối thiểu 2 ký tự"
+      v => (v && v.length >= 2) || "Tên tối thiểu 2 ký tự"
     ],
     emailRules: [
       v => !!v || "E-mail Không thể bỏ trống",
