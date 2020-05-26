@@ -1,10 +1,16 @@
 <template>
   <v-container>
     <v-snackbar top color="success" v-model="snackbar">Xóa bài viết thành công</v-snackbar>
-    <div>Chủ đề: {{baiViet.chu_de.ten}}</div>
+    <!-- <div>Chủ đề: {{baiViet.chu_de.ten}}</div> -->
+    <v-btn
+      large
+      color="deep-purple darken-4"
+      style="color: white"
+      class="mb-6 mt-4"
+    >Chủ đề: {{baiViet.chu_de.ten}}</v-btn>
     <v-card>
       <v-card-title>
-        <div>{{baiViet.tieu_de}}</div>
+        <div style="font-size: 24px">{{baiViet.tieu_de}}</div>
         <v-spacer />
         <v-btn class="mx-2" fab dark small color="cyan" v-if="own" @click="edit">
           <v-icon dark>mdi-pencil</v-icon>
@@ -28,36 +34,77 @@
         </v-list-item>
       </v-list-item>
       <img :src="baiViet.anh_dai_dien" style="width: 100%; border-radius: 20px" />
-      <v-card-text v-html="baiViet.noi_dung" class="pb-12 pb-8">
-      </v-card-text>
+      <v-card-text v-html="baiViet.noi_dung" class="pb-12 pb-8"></v-card-text>
+      <v-layout>
+        <!-- <v-btn class="mb-5 ml-5" fab dark small color="pink">
+          <v-icon dark>mdi-heart</v-icon>
+        </v-btn>-->
+        <v-btn class="mb-5 ml-5" fab dark small color="indigo">
+          <v-icon dark>mdi-heart</v-icon>
+        </v-btn>
+        <span class="ml-3" style="font-size: 20px">12 người khác</span>
+      </v-layout>
     </v-card>
     <v-card class="mt-8">
       <v-row>
         <v-col cols="1">
           <v-list-item-avatar class="ml-8">
-            <!-- <v-img v-if="baiViet.user.anh_dai_dien" :src="baiViet.user.anh_dai_dien"></v-img> -->
-            <v-img src="../../assets/avatar.jpg"></v-img>
+            <v-img v-if="baiViet.user.anh_dai_dien" :src="baiViet.user.anh_dai_dien"></v-img>
+            <v-img v-else src="../../assets/avatar.jpg"></v-img>
           </v-list-item-avatar>
         </v-col>
         <v-col cols="10">
           <v-textarea outlined label="Viết bình luận đi bạn ơi !" style="border-radius: 20px"></v-textarea>
         </v-col>
       </v-row>
-      <v-btn class="mb-5 ml-5" fab dark small color="pink">
-        <v-icon dark>mdi-heart</v-icon>
-      </v-btn>
-      <v-btn class="mb-5 ml-5" fab dark small color="indigo">
-        <v-icon dark>mdi-heart</v-icon>
-      </v-btn>
-      <span class="ml-3" style="font-size: 20px">12 người khác</span>
-      <v-btn dark class="mb-5 ml-5">
+      <v-btn dark class="mb-5 ml-10">
         <v-icon left>mdi-message</v-icon>20 bình luận
       </v-btn>
+    </v-card>
+
+    <v-card class="mt-1">
+      <v-row v-for="binhluan in baiViet.binh_luans" :key="binhluan.id">
+        <v-col cols="1">
+          <v-list-item-avatar class="ml-8">
+            <v-img v-if="binhluan.user.anh_dai_dien" :src="binhluan.user.anh_dai_dien"></v-img>
+            <v-img v-else src="../../assets/avatar.jpg"></v-img>
+          </v-list-item-avatar>
+        </v-col>
+        <v-col cols="10">
+          <div
+            style="width: 100%; border-radius: 7px; min-height: 100px; background-color: #80808036"
+          >
+            <v-layout class="ml-3">
+              <span
+                class="mt-2"
+                style="color: #1F618D; font-size: 18px; font-weight: bold"
+              >{{binhluan.user.name}}</span>
+              <span class="ml-6 mt-2">{{binhluan.created_at}}</span>
+              <v-spacer />
+              <v-btn class="mb-5 mt-2 mr-6" fab dark x-small color="pink">
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </v-layout>
+            <v-card-text>{{binhluan.noi_dung}}</v-card-text>
+          </div>
+          <v-btn class="mb-5 mt-2" fab dark x-small color="pink">
+            <v-icon dark>mdi-heart</v-icon>
+          </v-btn>
+          <!-- <v-btn class="mb-5 ml-5" fab dark small color="indigo">
+          <v-icon dark>mdi-heart</v-icon>
+          </v-btn>-->
+          <span class="ml-3" style="font-size: 20px">12 người khác</span>
+        </v-col>
+      </v-row>
+
+      <!-- <v-btn class="mb-5 ml-12" fab dark small color="indigo">
+        <v-icon dark>mdi-heart</v-icon>
+      </v-btn>-->
     </v-card>
   </v-container>
 </template>
 <script>
-import md from 'marked';
+import md from "marked";
 export default {
   data: () => ({
     baiViet: {
@@ -69,14 +116,14 @@ export default {
       }
     },
     own: false,
-    snackbar: false
+    snackbar: false,
   }),
   methods: {
     async getData() {
       let data = await axios.get("/baiviet/" + this.$route.params.id);
       this.baiViet = data.data;
-      this.baiViet.noi_dung = md.parse(this.baiViet.noi_dung)
-      this.own = User.own(this.baiViet.user_id)
+      this.baiViet.noi_dung = md.parse(this.baiViet.noi_dung);
+      this.own = User.own(this.baiViet.user_id);
     },
     async xoaBaiViet() {
       try {
@@ -87,8 +134,8 @@ export default {
         }, 2000);
       } catch (error) {}
     },
-    edit(){
-      this.$router.push(`/suabaiviet/${this.$route.params.id}`)
+    edit() {
+      this.$router.push(`/suabaiviet/${this.$route.params.id}`);
     }
   },
   created() {

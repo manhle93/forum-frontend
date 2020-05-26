@@ -43,7 +43,16 @@
                 <v-card-title>{{chuDe.ten}}</v-card-title>
               </v-img>
               <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
-              <v-btn color="orange" text>Xem</v-btn>
+              <v-layout class="pr-3">
+                <v-btn color="orange" text>Xem</v-btn>
+                <v-spacer />
+                <v-btn small icon color="indigo" @click="showFormEditChuDe(chuDe.id)">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </v-layout>
             </v-card>
           </v-col>
           <v-col xl="2" lg="3" md="4" sm="6">
@@ -53,13 +62,11 @@
               style="border-radius: 15px;"
               @click="showFormAddChuDe"
             >
-              <v-img
-                class="black--text align-end pt-6"
-                height="150px"
-                src="https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/plus-512.png"
-              ></v-img>
-              <v-card-subtitle class="pb-0">Tạo chủ đề mới</v-card-subtitle>
-              <v-btn color="orange" text>Thêm chủ đề</v-btn>
+              <v-card-text style="text-align: center" class="pt-2 pb-2">
+                <v-icon style="font-size: 150px">mdi-plus</v-icon>
+              </v-card-text>
+              <v-card-subtitle class="pt-0 pb-0">Tạo chủ đề mới</v-card-subtitle>
+              <v-btn color="blue" text>Thêm chủ đề</v-btn>
             </v-card>
           </v-col>
         </v-row>
@@ -208,7 +215,8 @@
     </v-container>
     <v-dialog v-model="showFormChuDe" width="500">
       <v-card>
-        <v-card-title class="headline grey lighten-2" primary-title>Thêm chủ đề</v-card-title>
+        <v-card-title v-if="editChuDe" class="headline grey lighten-2" primary-title>Cập nhật chủ đề</v-card-title>
+        <v-card-title v-else class="headline grey lighten-2" primary-title>Thêm chủ đề</v-card-title>
         <v-card-text class="mt-6">
           <form>
             <span>Tên chủ đề</span>
@@ -249,7 +257,22 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="themChuDe">Thêm chủ đề</v-btn>
+          <v-btn v-if="editChuDe" color="primary" text @click="capNhatChuDe">Cập nhật</v-btn>
+          <v-btn v-else color="primary" text @click="themChuDe">Thêm chủ đề</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="xoa" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>{{tieuDeXoa}}</v-card-title>
+        <v-card-text style="font-size: 18px;">{{noiDungXoa}}</v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
+          <v-btn color="primary" text @click="xoaChuDe">Đồng ý</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -294,6 +317,10 @@ export default {
         anh_dai_dien: null,
         mo_ta: null
       },
+      xoa: false,
+      tieuDeXoa: "",
+      noiDungXoa: "",
+      editChuDe: false,
       uploadLoi: false,
       loiUpload: "",
       thanhCong: "",
@@ -405,7 +432,7 @@ export default {
           });
       }
     },
-    handleChangeChuDe(e) {
+    handleChangeAnhChuDe(e) {
       let files = e.target.files;
       let data = new FormData();
       data.append("file", files[0]);
@@ -434,6 +461,7 @@ export default {
       }
     },
     showFormAddChuDe() {
+      this.editChuDe = false;
       this.showFormChuDe = true;
       this.formChuDe = {
         ten: "",
@@ -457,6 +485,50 @@ export default {
     },
     uploadAnhChuDe() {
       this.$refs["upload-image-chu-de"].click();
+    },
+    async showFormEditChuDe(id) {
+      this.editChuDe = true;
+      this.showFormChuDe = true;
+      try {
+        let data = await axios.get(`/chude/${id}`);
+        console.log(data);
+        this.formChuDe.ten = data.data.ten;
+        this.formChuDe.mo_ta = data.data.mo_ta;
+        this.formChuDe.anh_dai_dien = data.data.anh_dai_dien;
+        this.formChuDe.id = data.data.id;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async capNhatChuDe() {
+      try {
+        await axios.put("chude/" + this.formChuDe.id, this.formChuDe);
+        this.thanhCong = "Cập nhật chủ đề thành công";
+        this.snackbar = true;
+        this.showFormChuDe = false;
+        this.getChuDe();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    confirmXoaChuDe(id) {
+      this.xoa = true;
+      this.formChuDe.id = id;
+      this.tieuDeXoa = "Xóa chủ đề";
+      this.noiDungXoa =
+        "Bạn có chắc chắn muốn xóa chủ đề này cùng toàn bộ bài viết bên trong ?";
+    },
+    async xoaChuDe() {
+      try {
+        await axios.delete("chude/" + this.formChuDe.id);
+        this.thanhCong = "Xóa chủ đề thành công";
+        this.snackbar = true;
+        this.xoa = false;
+        this.getChuDe();
+        this.getBaiViet();
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 };
