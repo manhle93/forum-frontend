@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-snackbar top color="success" v-model="snackbar">Đăng bài thành công</v-snackbar>
+    <v-snackbar top color="success" v-model="snackbar">{{thanhCong}}</v-snackbar>
     <v-snackbar top color="warning" v-model="uploadLoi">{{loiUpload}}</v-snackbar>
     <v-carousel>
       <v-carousel-item
@@ -44,6 +44,22 @@
               </v-img>
               <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
               <v-btn color="orange" text>Xem</v-btn>
+            </v-card>
+          </v-col>
+          <v-col xl="2" lg="3" md="4" sm="6">
+            <v-card
+              class="mx-auto"
+              max-width="250"
+              style="border-radius: 15px;"
+              @click="showFormAddChuDe"
+            >
+              <v-img
+                class="black--text align-end pt-6"
+                height="150px"
+                src="https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/plus-512.png"
+              ></v-img>
+              <v-card-subtitle class="pb-0">Tạo chủ đề mới</v-card-subtitle>
+              <v-btn color="orange" text>Thêm chủ đề</v-btn>
             </v-card>
           </v-col>
         </v-row>
@@ -190,6 +206,53 @@
         </div>
       </v-card>
     </v-container>
+    <v-dialog v-model="showFormChuDe" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>Thêm chủ đề</v-card-title>
+        <v-card-text class="mt-6">
+          <form>
+            <span>Tên chủ đề</span>
+            <v-text-field
+              class="mt-3"
+              v-model="formChuDe.ten"
+              placeholder="Nhập tiêu đề bài viết"
+              solo
+              :rules="tenChuDeRules"
+            ></v-text-field>
+            <v-layout class="mb-6">
+              <v-btn small @click="uploadAnhChuDe">
+                <input
+                  ref="upload-image-chu-de"
+                  class="upload-image"
+                  type="file"
+                  @change="handleChangeAnhChuDe($event)"
+                />
+                <v-icon left dark>mdi-image-area</v-icon>Upload Ảnh đại diện
+              </v-btn>
+              <img
+                v-if="formChuDe.anh_dai_dien"
+                :src="formChuDe.anh_dai_dien"
+                style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
+                class="ml-6"
+              />
+            </v-layout>
+            <span>Mô tả</span>
+            <v-textarea
+              class="mt-3"
+              v-model="formChuDe.mo_ta"
+              placeholder="Nhập tiêu đề bài viết"
+              solo
+            ></v-textarea>
+          </form>
+        </v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="themChuDe">Thêm chủ đề</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
@@ -201,6 +264,7 @@ export default {
       pageChuDe: 1,
       totalPageChuDe: 1,
       dataChuDe: [],
+      showFormChuDe: false,
       items: [
         {
           src: "https://cdn.vuetifyjs.com/images/carousel/squirrel.jpg"
@@ -225,10 +289,19 @@ export default {
         loai: "bai_viet",
         anh_dai_dien: null
       },
+      formChuDe: {
+        ten: "",
+        anh_dai_dien: null,
+        mo_ta: null
+      },
       uploadLoi: false,
       loiUpload: "",
+      thanhCong: "",
       chuDes: [],
-      chuDes: [],
+      tenChuDeRules: [
+        v => !!v || "Tên chủ đề không thể bỏ trống",
+        v => (v && v.length >= 5) || "Tên chủ đề tối thiểu 5 ký tự"
+      ],
       tieuDeRules: [
         v => !!v || "Tiêu đề không thể bỏ trống",
         v => (v && v.length >= 5) || "Tên tối thiểu 5 ký tự"
@@ -282,6 +355,7 @@ export default {
     async dangBai() {
       try {
         await axios.post("/baiviet", this.form);
+        this.thanhCong = "Đăng bài thành công";
         this.snackbar = true;
         this.resetBaiViet();
         this.getBaiViet();
@@ -331,8 +405,58 @@ export default {
           });
       }
     },
+    handleChangeChuDe(e) {
+      let files = e.target.files;
+      let data = new FormData();
+      data.append("file", files[0]);
+
+      var filePath = files[0].name.split(".").pop(); //lấy định dạng file
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      const isLt2M = files[0].size / 1024 / 1024 < 20;
+      if (!isLt2M) {
+        this.loiUpload = "Kích thước tập tin tối đa 20MB";
+        this.uploadLoi = true;
+        return false;
+      }
+      if (!dinhDangChoPhep.find(el => el == filePath)) {
+        this.loiUpload = "Định dạng file không hợp lệ, hãy upload file ảnh";
+        this.uploadLoi = true;
+        return;
+      } else {
+        axios
+          .post("/uploadanh", data)
+          .then(res => {
+            this.formChuDe.anh_dai_dien = ImageUrl + "/" + res.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
+    },
+    showFormAddChuDe() {
+      this.showFormChuDe = true;
+      this.formChuDe = {
+        ten: "",
+        anh_dai_dien: null,
+        mo_ta: null
+      };
+    },
+    async themChuDe() {
+      try {
+        let data = await axios.post("chude", this.formChuDe);
+        this.thanhCong = "Tạo chủ đề thành công";
+        this.snackbar = true;
+        this.getChuDe();
+        this.showFormChuDe = false;
+      } catch (error) {
+        console.log(error);
+      }
+    },
     uploadAnh() {
       this.$refs["upload-image"].click();
+    },
+    uploadAnhChuDe() {
+      this.$refs["upload-image-chu-de"].click();
     }
   }
 };
