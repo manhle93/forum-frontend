@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-snackbar top color="success" v-model="snackbar">Xóa bài viết thành công</v-snackbar>
+    <v-snackbar top color="success" v-model="snackbar">{{thanhCong}}</v-snackbar>
     <!-- <div>Chủ đề: {{baiViet.chu_de.ten}}</div> -->
     <v-btn
       large
@@ -36,9 +36,6 @@
       <img :src="baiViet.anh_dai_dien" style="width: 100%; border-radius: 20px" />
       <v-card-text v-html="baiViet.noi_dung" class="pb-12 pb-8"></v-card-text>
       <v-layout>
-        <!-- <v-btn class="mb-5 ml-5" fab dark small color="pink">
-          <v-icon dark>mdi-heart</v-icon>
-        </v-btn>-->
         <v-btn class="mb-5 ml-5" fab dark small color="indigo">
           <v-icon dark>mdi-heart</v-icon>
         </v-btn>
@@ -54,7 +51,17 @@
           </v-list-item-avatar>
         </v-col>
         <v-col cols="10">
-          <v-textarea outlined label="Viết bình luận đi bạn ơi !" style="border-radius: 20px"></v-textarea>
+          <form ref="form">
+            <v-textarea
+              outlined
+              label="Viết bình luận đi bạn ơi !"
+              style="border-radius: 20px"
+              v-model="form.noi_dung"
+            ></v-textarea>
+            <v-btn :disabled="dangBL" color="indigo" style="color: white" @click="vietBinhLuan">
+              <v-icon left>mdi-pen</v-icon>Đăng
+            </v-btn>
+          </form>
         </v-col>
       </v-row>
       <v-btn dark class="mb-5 ml-10">
@@ -63,7 +70,7 @@
     </v-card>
 
     <v-card class="mt-1">
-      <v-row v-for="binhluan in baiViet.binh_luans" :key="binhluan.id">
+      <v-row v-for="binhluan in binhLuans" :key="binhluan.id">
         <v-col cols="1">
           <v-list-item-avatar class="ml-8">
             <v-img v-if="binhluan.user.anh_dai_dien" :src="binhluan.user.anh_dai_dien"></v-img>
@@ -72,7 +79,7 @@
         </v-col>
         <v-col cols="10">
           <div
-            style="width: 100%; border-radius: 7px; min-height: 100px; background-color: #80808036"
+            style="width: 100%; border-radius: 25px; min-height: 100px; background-color: #80808036"
           >
             <v-layout class="ml-3">
               <span
@@ -81,7 +88,15 @@
               >{{binhluan.user.name}}</span>
               <span class="ml-6 mt-2">{{binhluan.created_at}}</span>
               <v-spacer />
-              <v-btn class="mb-5 mt-2 mr-6" fab dark x-small color="pink">
+              <v-btn
+                class="mb-5 mt-2 mr-6"
+                fab
+                dark
+                x-small
+                color="pink"
+                v-if="binhLuanCuaToi(binhluan.user_id)"
+                @click="xoaBinhLuan(binhluan.id)"
+              >
                 <v-icon dark>mdi-delete</v-icon>
               </v-btn>
             </v-layout>
@@ -115,9 +130,25 @@ export default {
         name: ""
       }
     },
+    thanhCong: "",
+    form: {
+      noi_dung: "",
+      bai_viet_id: null
+    },
+    dangBL: true,
+    binhLuans: [],
     own: false,
     snackbar: false,
   }),
+  watch: {
+    "form.noi_dung": function() {
+      if (this.form.noi_dung.length >= 5) {
+        this.dangBL = false;
+      } else {
+        this.dangBL = true;
+      }
+    }
+  },
   methods: {
     async getData() {
       let data = await axios.get("/baiviet/" + this.$route.params.id);
@@ -125,21 +156,57 @@ export default {
       this.baiViet.noi_dung = md.parse(this.baiViet.noi_dung);
       this.own = User.own(this.baiViet.user_id);
     },
-    async xoaBaiViet() {
+    binhLuanCuaToi(id) {
+      return User.own(id);
+    },
+    async getBinhLuan() {
+      let data = await axios.get("/binhluan/" + this.$route.params.id);
+      this.binhLuans = data.data;
+    },
+    async vietBinhLuan() {
       try {
-        await axios.delete("/baiviet/" + this.$route.params.id);
+        this.form.bai_viet_id = this.$route.params.id;
+        await axios.post("/binhluan", this.form);
+        this.thanhCong = "Đã đăng bình luận";
         this.snackbar = true;
-        setTimeout(() => {
-          this.$router.push("/");
-        }, 2000);
-      } catch (error) {}
+        this.form = {
+          noi_dung: "",
+          bai_viet_id: this.$route.params.id
+        };
+        this.getBinhLuan();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async xoaBaiViet() {
+      if (this.form.noi_dung.length > 5) {
+        try {
+          await axios.delete("/baiviet/" + this.$route.params.id);
+          this.thanhCong = "Xóa bài viết thành công";
+          this.snackbar = true;
+          setTimeout(() => {
+            this.$router.push("/");
+          }, 2000);
+        } catch (error) {}
+      }
     },
     edit() {
       this.$router.push(`/suabaiviet/${this.$route.params.id}`);
+    },
+    async xoaBinhLuan($id){
+      try {
+        let data = await axios.delete('/binhluan/' + $id);
+        this.thanhCong = "Xóa bình luận thành công"
+        this.snackbar = true
+        this.getBinhLuan()
+      } catch (error) {
+        console.log(error)
+      }
     }
   },
   created() {
     this.getData();
+    this.getBinhLuan();
   }
 };
 </script>
