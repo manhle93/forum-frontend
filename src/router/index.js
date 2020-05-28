@@ -34,6 +34,11 @@ Vue.use(VueRouter)
     path: '/suabaiviet/:id',
     name: 'BaiViet',
     component: () => import("../views/baiviet/edit"),
+  },
+  {
+    path: '/chude/:id',
+    name: 'chude',
+    component: () => import("../views/chude/index"),
   }
 ]
 

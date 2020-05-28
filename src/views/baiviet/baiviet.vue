@@ -35,11 +35,30 @@
       </v-list-item>
       <img :src="baiViet.anh_dai_dien" style="width: 100%; border-radius: 20px" />
       <v-card-text v-html="baiViet.noi_dung" class="pb-12 pb-8"></v-card-text>
-      <v-layout>
-        <v-btn class="mb-5 ml-5" fab dark small color="indigo">
+      <v-layout style="align-items: baseline">
+        <v-btn
+          v-if="!baiViet.liked"
+          class="mb-5 ml-5"
+          fab
+          dark
+          small
+          color="indigo"
+          @click="likeBaiViet(baiViet.id)"
+        >
           <v-icon dark>mdi-heart</v-icon>
         </v-btn>
-        <span class="ml-3" style="font-size: 20px">12 người khác</span>
+        <v-btn
+          v-else
+          class="mb-5 ml-5"
+          fab
+          dark
+          small
+          color="pink"
+          @click="unLikeBaiViet(baiViet.id)"
+        >
+          <v-icon dark>mdi-heart</v-icon>
+        </v-btn>
+        <span class="ml-3" style="font-size: 20px">{{baiViet.like_count}}</span>
       </v-layout>
     </v-card>
     <v-card class="mt-8">
@@ -51,16 +70,19 @@
           </v-list-item-avatar>
         </v-col>
         <v-col cols="10">
-          <form ref="form">
+          <form ref="form" class="mt-3">
             <v-textarea
+              rows="3"
               outlined
               label="Viết bình luận đi bạn ơi !"
               style="border-radius: 20px"
               v-model="form.noi_dung"
             ></v-textarea>
-            <v-btn :disabled="dangBL" color="indigo" style="color: white" @click="vietBinhLuan">
-              <v-icon left>mdi-pen</v-icon>Đăng
-            </v-btn>
+            <v-layout justify-end>
+              <v-btn :disabled="dangBL" color="indigo" style="color: white" @click="vietBinhLuan">
+                <v-icon left>mdi-pen</v-icon>Đăng
+              </v-btn>
+            </v-layout>
           </form>
         </v-col>
       </v-row>
@@ -102,19 +124,31 @@
             </v-layout>
             <v-card-text>{{binhluan.noi_dung}}</v-card-text>
           </div>
-          <v-btn class="mb-5 mt-2" fab dark x-small color="pink">
+          <v-btn
+            v-if="binhluan.liked"
+            class="mb-5 mt-2"
+            fab
+            dark
+            x-small
+            color="pink"
+            @click="unLikeBinhLuan(binhluan.id)"
+          >
             <v-icon dark>mdi-heart</v-icon>
           </v-btn>
-          <!-- <v-btn class="mb-5 ml-5" fab dark small color="indigo">
-          <v-icon dark>mdi-heart</v-icon>
-          </v-btn>-->
-          <span class="ml-3" style="font-size: 20px">12 người khác</span>
+          <v-btn
+            v-else
+            class="mb-5 mt-2"
+            fab
+            dark
+            x-small
+            color="indigo"
+            @click="likeBinhLuan(binhluan.id)"
+          >
+            <v-icon dark>mdi-heart</v-icon>
+          </v-btn>
+          <span class="ml-3" style="font-size: 20px">{{binhluan.like_count}}</span>
         </v-col>
       </v-row>
-
-      <!-- <v-btn class="mb-5 ml-12" fab dark small color="indigo">
-        <v-icon dark>mdi-heart</v-icon>
-      </v-btn>-->
     </v-card>
   </v-container>
 </template>
@@ -130,6 +164,10 @@ export default {
         name: ""
       }
     },
+    like: {
+      type: "",
+      reference_id: ""
+    },
     thanhCong: "",
     form: {
       noi_dung: "",
@@ -138,7 +176,7 @@ export default {
     dangBL: true,
     binhLuans: [],
     own: false,
-    snackbar: false,
+    snackbar: false
   }),
   watch: {
     "form.noi_dung": function() {
@@ -155,6 +193,7 @@ export default {
       this.baiViet = data.data;
       this.baiViet.noi_dung = md.parse(this.baiViet.noi_dung);
       this.own = User.own(this.baiViet.user_id);
+      console.log(this.baiViet);
     },
     binhLuanCuaToi(id) {
       return User.own(id);
@@ -193,15 +232,48 @@ export default {
     edit() {
       this.$router.push(`/suabaiviet/${this.$route.params.id}`);
     },
-    async xoaBinhLuan($id){
+    async xoaBinhLuan($id) {
       try {
-        let data = await axios.delete('/binhluan/' + $id);
-        this.thanhCong = "Xóa bình luận thành công"
-        this.snackbar = true
-        this.getBinhLuan()
+        let data = await axios.delete("/binhluan/" + $id);
+        this.thanhCong = "Xóa bình luận thành công";
+        this.snackbar = true;
+        this.getBinhLuan();
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
+    },
+    async likeBaiViet(id) {
+      this.like.reference_id = id;
+      this.like.type = "bai_viet";
+      await axios.post("/like", this.like);
+      this.like.reference_id = "";
+      this.like.type = "";
+      this.getData();
+    },
+    async unLikeBaiViet(id) {
+      this.like.reference_id = id;
+      this.like.type = "bai_viet";
+      await axios.post("/unlike", this.like);
+      this.like.reference_id = "";
+      this.like.type = "";
+      this.getData();
+    },
+
+    async likeBinhLuan(id) {
+      this.like.reference_id = id;
+      this.like.type = "binh_luan";
+      await axios.post("/like", this.like);
+      this.like.reference_id = "";
+      this.like.type = "";
+      this.getBinhLuan();
+    },
+    async unLikeBinhLuan(id) {
+      this.like.reference_id = id;
+      this.like.type = "binh_luan";
+      await axios.post("/unlike", this.like);
+      this.like.reference_id = "";
+      this.like.type = "";
+      this.getBinhLuan();
     }
   },
   created() {

@@ -16,6 +16,9 @@ class AppStorage {
     getToken() {
         return localStorage.getItem('token')
     }
+    getAnhDaiDien() {
+        return localStorage.getItem('anh_dai_dien')
+    }
     getUser() {
         return localStorage.getItem('user')
     }

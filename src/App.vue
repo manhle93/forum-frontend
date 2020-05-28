@@ -23,10 +23,12 @@
       </v-toolbar-title>
       <v-toolbar-title style="width: 130px" class="ml-0 pl-1" v-if="!loggedIn">
         <router-link to="/dangky">
-        <v-btn color="red">Đăng ký</v-btn></router-link>
+          <v-btn color="red">Đăng ký</v-btn>
+        </router-link>
       </v-toolbar-title>
       <router-link to="/login">
-      <v-btn v-if="!loggedIn" color="green">Đăng nhập</v-btn></router-link>
+        <v-btn v-if="!loggedIn" color="green">Đăng nhập</v-btn>
+      </router-link>
       <v-btn icon v-if="loggedIn">
         <v-icon>mdi-bell</v-icon>
       </v-btn>
@@ -34,18 +36,25 @@
       <v-menu bottom origin="center center" transition="scale-transition">
         <template v-slot:activator="{ on }">
           <v-btn icon large v-if="loggedIn" v-on="on">
-            <v-avatar size="40px" item>
-              <v-img src="https://cdn.vuetifyjs.com/images/logos/logo.svg" alt="Vuetify"></v-img>
+            <v-avatar size="40px" item v-if="user.anh_dai_dien">
+              <v-img :src="user.anh_dai_dien" alt="Vuetify"></v-img>
+            </v-avatar>
+            <v-avatar size="40px" item v-else>
+              <v-img src="./assets/avatar.jpg" alt="Vuetify"></v-img>
             </v-avatar>
           </v-btn>
         </template>
 
         <v-list>
           <v-list-item @click="trangCaNhan">
-            <v-list-item-title><v-icon>mdi-account</v-icon> Trang cá nhân</v-list-item-title>
+            <v-list-item-title>
+              <v-icon>mdi-account</v-icon>Trang cá nhân
+            </v-list-item-title>
           </v-list-item>
           <v-list-item @click="logout">
-            <v-list-item-title><v-icon>mdi-backup-restore</v-icon> Đăng xuất</v-list-item-title>
+            <v-list-item-title>
+              <v-icon>mdi-backup-restore</v-icon>Đăng xuất
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -53,7 +62,7 @@
     </v-app-bar>
     <v-content style="background: #80808030">
       <router-view />
-      <img src="../src/assets/footer.png" style="width: 100%; margin-top: 150px">
+      <img src="../src/assets/footer.png" style="width: 100%; margin-top: 150px" />
     </v-content>
   </v-app>
 </template>
@@ -70,19 +79,24 @@ export default {
 
   data: () => ({
     loggedIn: false,
-    name: ""
+    name: "",
+    anh_dai_dien: null,
+    user: {}
   }),
   methods: {
-    trangCaNhan(){
-
+    trangCaNhan() {},
+    async me() {
+      let data = await axios.post("/auth/me");
+      this.user = data.data;
     },
-    logout(){
-      User.logout()
+    logout() {
+      User.logout();
     }
   },
   created() {
     this.loggedIn = User.loggedIn();
     this.name = User.name();
+    this.me();
   }
 };
 </script>

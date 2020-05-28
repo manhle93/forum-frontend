@@ -42,9 +42,11 @@
               >
                 <v-card-title>{{chuDe.ten}}</v-card-title>
               </v-img>
-              <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài viết</v-card-subtitle>
+              <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài đăng</v-card-subtitle>
               <v-layout class="pr-3">
-                <v-btn color="orange" text>Xem</v-btn>
+                <router-link :to="`chude/${chuDe.id}`">
+                  <v-btn color="orange" text>Xem</v-btn>
+                </router-link>
                 <v-spacer />
                 <v-btn small icon color="indigo" @click="showFormEditChuDe(chuDe.id)">
                   <v-icon>mdi-pencil</v-icon>
@@ -491,7 +493,6 @@ export default {
       this.showFormChuDe = true;
       try {
         let data = await axios.get(`/chude/${id}`);
-        console.log(data);
         this.formChuDe.ten = data.data.ten;
         this.formChuDe.mo_ta = data.data.mo_ta;
         this.formChuDe.anh_dai_dien = data.data.anh_dai_dien;
