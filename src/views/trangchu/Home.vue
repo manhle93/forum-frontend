@@ -43,15 +43,15 @@
                 <v-card-title>{{chuDe.ten}}</v-card-title>
               </v-img>
               <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài đăng</v-card-subtitle>
-              <v-layout class="pr-3">
+              <v-layout class="pr-3" >
                 <router-link :to="`chude/${chuDe.id}`">
                   <v-btn color="orange" text>Xem</v-btn>
                 </router-link>
                 <v-spacer />
-                <v-btn small icon color="indigo" @click="showFormEditChuDe(chuDe.id)">
+                <v-btn small icon color="indigo" @click="showFormEditChuDe(chuDe.id)" v-if="loggedIn">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)">
+                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)" v-if="loggedIn">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </v-layout>
@@ -80,7 +80,7 @@
         </div>
       </v-card>
     </v-container>
-    <v-container>
+    <v-container v-if="loggedIn">
       <v-card style="border-radius: 20px">
         <v-card-title style="background-color: #1F618D; color: white">
           Viết bài mới
@@ -297,6 +297,7 @@ import md from "marked";
 export default {
   data() {
     return {
+      loggedIn: false,
       pageCauHoi: 1,
       totalPageCauHoi: 1,
       pageBaiViet: 1,
@@ -355,7 +356,7 @@ export default {
     };
   },
   created() {
-    console.log(window.location.href)
+    this.loggedIn = User.loggedIn()
     this.getChuDe();
     this.getBaiViet();
     this.getChuDeBaiViet();
