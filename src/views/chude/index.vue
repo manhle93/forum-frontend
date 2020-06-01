@@ -2,10 +2,12 @@
   <v-container>
     <v-row justify="space-around">
       <v-img
-        src="https://picsum.photos/510/300?random"
+        v-if="chuDe.anh_dai_dien"
+        :src="chuDe.anh_dai_dien"
         aspect-ratio="1.7"
         style="max-height: 400px"
       ></v-img>
+      <v-img v-else src="../../assets/bgchude.jpg" aspect-ratio="1.7" style="max-height: 400px"></v-img>
     </v-row>
     <v-card>
       <v-card-title>Chủ đề: {{chuDe.ten}}</v-card-title>
@@ -89,20 +91,50 @@
   </v-container>
 </template>
 <script>
+import md from "marked";
+
 export default {
   data() {
     return {
-        chuDe: {}
+      chuDe: {
+        user: { name: "" }
+      },
+      baiViet: [],
+      hoiDap: []
     };
   },
-  created(){
-      this.getChuDe()
+  created() {
+    this.getChuDe();
+    this.getBaiViet();
+    this.getCauHoi();
   },
   methods: {
-     async getChuDe() {
-         let data = await axios.get('/chude/' + this.$route.params.id)
-         this.chuDe = data.data
-     }
+    async getChuDe() {
+      let data = await axios.get("/chude/" + this.$route.params.id);
+      this.chuDe = data.data;
+    },
+    async getBaiViet() {
+      try {
+        let data = await axios.get(`baivietchude/${this.$route.params.id}`);
+        this.baiViet = data.data.data.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async getCauHoi() {
+      try {
+        let data = await axios.get(`cauhoichude/${this.$route.params.id}`);
+        this.hoiDap = data.data.data.data;
+        console.log(this.hoiDap);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    parseText(text) {
+      if (text) {
+        return md.parse(text);
+      } else return null;
+    }
   }
 };
 </script>

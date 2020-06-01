@@ -6,7 +6,7 @@
       <v-carousel-item
         v-for="(item,i) in items"
         :key="i"
-        :src="item.src"
+        :src="require('../../assets/' + item.src)"
         reverse-transition="fade-transition"
         transition="fade-transition"
       >
@@ -175,8 +175,16 @@
             </div>
           </div>
         </div>
-        <div style="text-align: center">
-          <v-btn color="primary">Xem thêm</v-btn>
+        <div
+          class="text-center"
+          style="position: absolute; bottom: 20px; width: 100%; align-content: center"
+        >
+          <v-pagination
+            v-model="pageCauHoi"
+            :length="totalPageCauHoi"
+            circle
+            @input="PaginateCauHoi"
+          ></v-pagination>
         </div>
       </v-card>
     </v-container>
@@ -203,16 +211,19 @@
               <div style="flex-grow: 1; height: 40px">
                 <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
                   <v-img v-if="bv.user.anh_dai_dien" :src="bv.user.anh_dai_dien"></v-img>
-                  <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                  <v-img v-else src="@/assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
               </div>
               <div style="flex-grow: 50;" v-if="bv.user">{{bv.user.name}} {{bv.created_at}}</div>
             </div>
           </div>
         </div>
-        <div style="text-align: center">
-          <v-btn color="primary">Xem thêm</v-btn>
-        </div>
+        <v-pagination
+          v-model="pageBaiViet"
+          :length="totalPageBaiViet"
+          circle
+          @input="PaginateBaiViet"
+        ></v-pagination>
       </v-card>
     </v-container>
     <v-dialog v-model="showFormChuDe" width="500">
@@ -286,23 +297,24 @@ import md from "marked";
 export default {
   data() {
     return {
+      pageCauHoi: 1,
+      totalPageCauHoi: 1,
+      pageBaiViet: 1,
+      totalPageBaiViet: 1,
       pageChuDe: 1,
       totalPageChuDe: 1,
       dataChuDe: [],
       showFormChuDe: false,
       items: [
         {
-          src: "https://cdn.vuetifyjs.com/images/carousel/squirrel.jpg"
+          src: "bn3.jpg"
         },
         {
-          src: "https://cdn.vuetifyjs.com/images/carousel/sky.jpg"
+          src: "bn2.png"
         },
         {
-          src: "https://cdn.vuetifyjs.com/images/carousel/bird.jpg"
+          src: "bn1.jpg"
         },
-        {
-          src: "https://cdn.vuetifyjs.com/images/carousel/planet.jpg"
-        }
       ],
       hoiDap: [],
       baiViet: [],
@@ -343,9 +355,11 @@ export default {
     };
   },
   created() {
+    console.log(window.location.href)
     this.getChuDe();
     this.getBaiViet();
     this.getChuDeBaiViet();
+    this.getCauHoi();
   },
   methods: {
     async PaginateChuDe() {
@@ -354,6 +368,26 @@ export default {
         this.dataChuDe = data.data.data.data;
         this.pageChuDe = data.data.data.current_page;
         this.totalPageChuDe = data.data.data.last_page;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async PaginateCauHoi() {
+      try {
+        let data = await axios.get("/cauhoitrangchu?page=" + this.pageCauHoi);
+        this.hoiDap = data.data.data.data;
+        this.pageCauHoi = data.data.data.current_page;
+        this.totalPageCauHoi = data.data.data.last_page;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async PaginateBaiViet() {
+      try {
+        let data = await axios.get("/baiviettrangchu?page=" + this.pageBaiViet);
+        this.baiViet = data.data.data.data;
+        this.pageBaiViet = data.data.data.current_page;
+        this.totalPageBaiViet = data.data.data.last_page;
       } catch (error) {
         console.log(error);
       }
@@ -370,8 +404,15 @@ export default {
     },
     async getBaiViet() {
       let data = await axios.get("/baiviettrangchu");
-      this.hoiDap = data.data.hoiDap;
-      this.baiViet = data.data.baiViet;
+      this.baiViet = data.data.data.data;
+      this.pageBaiViet = data.data.data.current_page;
+      this.totalPageBaiViet = data.data.data.last_page;
+    },
+    async getCauHoi() {
+      let data = await axios.get("/cauhoitrangchu");
+      this.hoiDap = data.data.data.data;
+      this.pageCauHoi = data.data.data.current_page;
+      this.totalPageCauHoi = data.data.data.last_page;
     },
     async getChuDeBaiViet() {
       try {
