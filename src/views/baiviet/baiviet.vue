@@ -279,6 +279,16 @@ export default {
   created() {
     this.getData();
     this.getBinhLuan();
+
+    Echo.channel('likeChannel')
+    .listen('LikeEvent', (e) => {
+        if(e.type == 'bai_viet'){
+          this.getData();
+        }
+        if(e.type == 'binh_luan'){
+          this.getBinhLuan()
+        }
+    });
   }
 };
 </script>
