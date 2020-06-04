@@ -29,9 +29,52 @@
       <router-link to="/login">
         <v-btn v-if="!loggedIn" color="green">Đăng nhập</v-btn>
       </router-link>
-      <v-btn icon v-if="loggedIn">
-        <v-icon>mdi-bell</v-icon>
-      </v-btn>
+      <v-menu offset-y transition="scale-transition" bottom origin="center center">
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-if="loggedIn" v-on="on">
+            <v-badge :content="thongBaoMoi" color="pink" overlap>
+              <v-icon>mdi-bell</v-icon>
+            </v-badge>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item v-for="(item) in thongBaoChuaDoc" :key="item.id" @click="docThongBao(item)">
+            <v-list-item-avatar>
+              <v-img
+                v-if="item.data.nguoi_binh_luan.anh_dai_dien"
+                :src="item.data.nguoi_binh_luan.anh_dai_dien"
+              ></v-img>
+              <v-img v-else src="./assets/avatar.jpg"></v-img>
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title>
+                <strong>{{item.data.nguoi_binh_luan.name}}</strong> Đã bình luận về bài viết của bạn
+              </v-list-item-title>
+              <v-list-item-subtitle v-html="item.data.bai_viet"></v-list-item-subtitle>
+              <v-divider></v-divider>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-for="(item) in thongBaoDaDoc" :key="item.id">
+            <router-link>
+              <v-list-item-avatar>
+                <v-img
+                  v-if="item.data.nguoi_binh_luan.anh_dai_dien"
+                  :src="item.data.nguoi_binh_luan.anh_dai_dien"
+                ></v-img>
+                <v-img v-else src="./assets/avatar.jpg"></v-img>
+              </v-list-item-avatar>
+
+              <v-list-item-content>
+                <v-list-item-title>
+                  <strong>{{item.data.nguoi_binh_luan.name}}</strong> Đã bình luận về bài viết của bạn
+                </v-list-item-title>
+                <v-list-item-subtitle v-html="item.data.bai_viet"></v-list-item-subtitle>
+                <v-divider></v-divider>
+              </v-list-item-content>
+            </router-link>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
       <v-menu bottom origin="center center" transition="scale-transition">
         <template v-slot:activator="{ on }">
@@ -81,7 +124,10 @@ export default {
     loggedIn: false,
     name: "",
     anh_dai_dien: null,
-    user: {}
+    user: {},
+    thongBaoDaDoc: [],
+    thongBaoChuaDoc: [],
+    thongBaoMoi: 0
   }),
   methods: {
     trangCaNhan() {},
@@ -91,12 +137,24 @@ export default {
     },
     logout() {
       User.logout();
+    },
+    async getThongBao() {
+      let data = await axios.get("/thongbao");
+      this.thongBaoDaDoc = data.data.daDoc.data;
+      this.thongBaoChuaDoc = data.data.chuaDoc;
+      this.thongBaoMoi = this.thongBaoChuaDoc.length;
+    },
+    docThongBao(data){
+      this.$router.push('/baiviet/'+ data.data.bai_viet_id)
     }
   },
   created() {
     this.loggedIn = User.loggedIn();
     this.name = User.name();
-    this.me();
+    this.getThongBao();
+    if (User.loggedIn()) {
+      this.me();
+    }
   }
 };
 </script>
