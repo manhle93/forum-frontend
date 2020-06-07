@@ -9,12 +9,15 @@ const ImageUrl = "http://127.0.0.1:8000";
 import axios from "./config";
 import Echo from "laravel-echo"
 
+const actoken = localStorage.getItem("token");
 window.Pusher = require('pusher-js');
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: '0b1ff6ede72a26bc7c91',
     cluster: "ap1",
-    forceTLS: true
+    forceTLS: true,
+    auth: { headers: { Authorization: `Bearer ${actoken}`}}
+    
 });
 
 window.axios = axios;

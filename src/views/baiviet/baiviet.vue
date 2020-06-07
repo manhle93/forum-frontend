@@ -193,7 +193,6 @@ export default {
       this.baiViet = data.data;
       this.baiViet.noi_dung = md.parse(this.baiViet.noi_dung);
       this.own = User.own(this.baiViet.user_id);
-      console.log(this.baiViet);
     },
     binhLuanCuaToi(id) {
       return User.own(id);
@@ -274,21 +273,22 @@ export default {
       this.like.reference_id = "";
       this.like.type = "";
       this.getBinhLuan();
+    },
+    listening() {
+      Echo.channel("likeChannel").listen("LikeEvent", e => {
+        if (e.type == "bai_viet") {
+          this.getData();
+        }
+        if (e.type == "binh_luan") {
+          this.getBinhLuan();
+        }
+      });
     }
   },
   created() {
     this.getData();
     this.getBinhLuan();
-
-    Echo.channel('likeChannel')
-    .listen('LikeEvent', (e) => {
-        if(e.type == 'bai_viet'){
-          this.getData();
-        }
-        if(e.type == 'binh_luan'){
-          this.getBinhLuan()
-        }
-    });
+    this.listening();
   }
 };
 </script>

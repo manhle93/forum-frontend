@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <v-snackbar top color="cyan darken-2" v-model="snackbar"><strong>{{userBinhLuan}}</strong> <div class="ml-2">{{noidung}}</div></v-snackbar>
     <v-app-bar :clipped-left="$vuetify.breakpoint.lgAndUp" app color="blue darken-3" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
@@ -127,7 +128,10 @@ export default {
     user: {},
     thongBaoDaDoc: [],
     thongBaoChuaDoc: [],
-    thongBaoMoi: 0
+    thongBaoMoi: 0,
+    snackbar: false,
+    userBinhLuan: "",
+    noidung: ""
   }),
   methods: {
     trangCaNhan() {},
@@ -144,8 +148,25 @@ export default {
       this.thongBaoChuaDoc = data.data.chuaDoc;
       this.thongBaoMoi = this.thongBaoChuaDoc.length;
     },
-    docThongBao(data){
-      this.$router.push('/baiviet/'+ data.data.bai_viet_id)
+    async docThongBao(data) {
+      try {
+        await axios.post("/docthongbao", { id: data.id });
+        this.$router.push("/baiviet/" + data.data.bai_viet_id);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    listening() {
+      Echo.channel("Notification").listen("NotifyEvent", e => {
+        if (e.id === User.id()) {
+          this.noidung = " Đã bình luận về bài viết của bạn";
+          this.userBinhLuan = e.user
+          this.snackbar = true;
+          console.log(e);
+          console.log(this.snackbar);
+          this.getThongBao();
+        }
+      });
     }
   },
   created() {
@@ -155,6 +176,7 @@ export default {
     if (User.loggedIn()) {
       this.me();
     }
+    this.listening();
   }
 };
 </script>
