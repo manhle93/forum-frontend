@@ -33,7 +33,7 @@
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
           <div style="height: auto; padding-left: 30px">
-            <router-link :to="'baiviet/'+ hoi.id">
+            <router-link :to="'/baiviet/'+ hoi.id">
               <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
             </router-link>
             <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
@@ -68,7 +68,7 @@
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
           <div style="height: auto; padding-left: 30px">
-            <router-link :to="'baiviet/'+ bv.id">
+            <router-link :to="'/baiviet/'+ bv.id">
               <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
             </router-link>
             <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>

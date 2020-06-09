@@ -8,6 +8,7 @@ const url = "http://127.0.0.1:8000/api";
 const ImageUrl = "http://127.0.0.1:8000";
 import axios from "./config";
 import Echo from "laravel-echo"
+import Exception from "./helpers/Exception"
 
 const actoken = localStorage.getItem("token");
 window.Pusher = require('pusher-js');
@@ -21,6 +22,7 @@ window.Echo = new Echo({
 });
 
 window.axios = axios;
+window.Exception = Exception;
 window.User = User;
 window.url = url;
 window.ImageUrl = ImageUrl;

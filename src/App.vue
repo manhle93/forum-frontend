@@ -1,6 +1,9 @@
 <template>
   <v-app>
-    <v-snackbar top color="cyan darken-2" v-model="snackbar"><strong>{{userBinhLuan}}</strong> <div class="ml-2">{{noidung}}</div></v-snackbar>
+    <v-snackbar top color="cyan darken-2" v-model="snackbar">
+      <strong>{{userBinhLuan}}</strong>
+      <div class="ml-2">{{noidung}}</div>
+    </v-snackbar>
     <v-app-bar :clipped-left="$vuetify.breakpoint.lgAndUp" app color="blue darken-3" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
@@ -43,7 +46,7 @@
             <v-list-item-avatar>
               <v-img
                 v-if="item.data.nguoi_binh_luan.anh_dai_dien"
-                :src="item.data.nguoi_binh_luan.anh_dai_dien"
+                :src="endPoint + item.data.nguoi_binh_luan.anh_dai_dien"
               ></v-img>
               <v-img v-else src="./assets/avatar.jpg"></v-img>
             </v-list-item-avatar>
@@ -60,7 +63,7 @@
               <v-list-item-avatar>
                 <v-img
                   v-if="item.data.nguoi_binh_luan.anh_dai_dien"
-                  :src="item.data.nguoi_binh_luan.anh_dai_dien"
+                  :src="endPoint + item.data.nguoi_binh_luan.anh_dai_dien"
                 ></v-img>
                 <v-img v-else src="./assets/avatar.jpg"></v-img>
               </v-list-item-avatar>
@@ -81,7 +84,7 @@
         <template v-slot:activator="{ on }">
           <v-btn icon large v-if="loggedIn" v-on="on">
             <v-avatar size="40px" item v-if="user.anh_dai_dien">
-              <v-img :src="user.anh_dai_dien" alt="Vuetify"></v-img>
+              <v-img :src="endPoint+ user.anh_dai_dien" alt="Vuetify"></v-img>
             </v-avatar>
             <v-avatar size="40px" item v-else>
               <v-img src="./assets/avatar.jpg" alt="Vuetify"></v-img>
@@ -131,22 +134,33 @@ export default {
     thongBaoMoi: 0,
     snackbar: false,
     userBinhLuan: "",
-    noidung: ""
+    noidung: "",
+    endPoint: ""
   }),
   methods: {
-    trangCaNhan() {},
+    trangCaNhan() {
+      this.$router.push('/trangcanhan')
+    },
     async me() {
-      let data = await axios.post("/auth/me");
-      this.user = data.data;
+      try {
+        let data = await axios.post("/auth/me");
+        this.user = data.data;
+      } catch (error) {
+        Exception.hanle(error);
+      }
     },
     logout() {
       User.logout();
     },
     async getThongBao() {
-      let data = await axios.get("/thongbao");
-      this.thongBaoDaDoc = data.data.daDoc.data;
-      this.thongBaoChuaDoc = data.data.chuaDoc;
-      this.thongBaoMoi = this.thongBaoChuaDoc.length;
+      try {
+        let data = await axios.get("/thongbao");
+        this.thongBaoDaDoc = data.data.daDoc.data;
+        this.thongBaoChuaDoc = data.data.chuaDoc;
+        this.thongBaoMoi = this.thongBaoChuaDoc.length;
+      } catch (error) {
+        Exception.hanle(error);
+      }
     },
     async docThongBao(data) {
       try {
@@ -160,7 +174,7 @@ export default {
       Echo.channel("Notification").listen("NotifyEvent", e => {
         if (e.id === User.id()) {
           this.noidung = " Đã bình luận về bài viết của bạn";
-          this.userBinhLuan = e.user
+          this.userBinhLuan = e.user;
           this.snackbar = true;
           console.log(e);
           console.log(this.snackbar);
@@ -177,6 +191,7 @@ export default {
       this.me();
     }
     this.listening();
+    this.endPoint = ImageUrl + "/"
   }
 };
 </script>
