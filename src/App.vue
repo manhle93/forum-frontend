@@ -58,8 +58,7 @@
               <v-divider></v-divider>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-for="(item) in thongBaoDaDoc" :key="item.id">
-            <router-link>
+          <v-list-item v-for="(item) in thongBaoDaDoc" :key="item.id" @click="thongBaoCu(item)">
               <v-list-item-avatar>
                 <v-img
                   v-if="item.data.nguoi_binh_luan.anh_dai_dien"
@@ -75,7 +74,6 @@
                 <v-list-item-subtitle v-html="item.data.bai_viet"></v-list-item-subtitle>
                 <v-divider></v-divider>
               </v-list-item-content>
-            </router-link>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -139,7 +137,7 @@ export default {
   }),
   methods: {
     trangCaNhan() {
-      this.$router.push('/trangcanhan')
+      this.$router.push("/trangcanhan");
     },
     async me() {
       try {
@@ -155,11 +153,18 @@ export default {
     async getThongBao() {
       try {
         let data = await axios.get("/thongbao");
-        this.thongBaoDaDoc = data.data.daDoc.data;
+        this.thongBaoDaDoc = data.data.daDoc;
         this.thongBaoChuaDoc = data.data.chuaDoc;
         this.thongBaoMoi = this.thongBaoChuaDoc.length;
       } catch (error) {
         Exception.hanle(error);
+      }
+    },
+     thongBaoCu(data) {
+      try {
+        this.$router.push("/baiviet/" + data.data.bai_viet_id);
+      } catch (error) {
+        console.log(error);
       }
     },
     async docThongBao(data) {
@@ -191,7 +196,7 @@ export default {
       this.me();
     }
     this.listening();
-    this.endPoint = ImageUrl + "/"
+    this.endPoint = ImageUrl + "/";
   }
 };
 </script>

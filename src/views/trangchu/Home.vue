@@ -361,6 +361,7 @@ export default {
     this.getBaiViet();
     this.getChuDeBaiViet();
     this.getCauHoi();
+    
   },
   methods: {
     async PaginateChuDe() {

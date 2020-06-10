@@ -23,7 +23,7 @@
         <v-list-item>
           <div>
             <v-list-item-avatar>
-              <v-img v-if="baiViet.user.anh_dai_dien" :src="baiViet.user.anh_dai_dien"></v-img>
+              <v-img v-if="baiViet.user.anh_dai_dien" :src="endPoint + baiViet.user.anh_dai_dien"></v-img>
               <v-img v-else src="../../assets/avatar.jpg"></v-img>
             </v-list-item-avatar>
           </div>
@@ -95,7 +95,7 @@
       <v-row v-for="binhluan in binhLuans" :key="binhluan.id">
         <v-col cols="1">
           <v-list-item-avatar class="ml-8">
-            <v-img v-if="binhluan.user.anh_dai_dien" :src="binhluan.user.anh_dai_dien"></v-img>
+            <v-img v-if="binhluan.user.anh_dai_dien" :src="endPoint + binhluan.user.anh_dai_dien"></v-img>
             <v-img v-else src="../../assets/avatar.jpg"></v-img>
           </v-list-item-avatar>
         </v-col>
@@ -168,6 +168,7 @@ export default {
       type: "",
       reference_id: ""
     },
+    endPoint: "",
     thanhCong: "",
     form: {
       noi_dung: "",
@@ -289,6 +290,7 @@ export default {
     this.getData();
     this.getBinhLuan();
     this.listening();
+    this.endPoint = ImageUrl + "/";
   }
 };
 </script>

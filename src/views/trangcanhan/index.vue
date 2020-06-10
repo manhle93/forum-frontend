@@ -64,14 +64,93 @@
 
           <v-tabs-items v-model="tab">
             <v-tab-item key="tab-1">
-              <v-card flat>
-                <v-card-text>Nội dung tab 1</v-card-text>
-              </v-card>
+              <v-container class="mt-6">
+                <div style="font-size: 20px; color: #2980B9; font-weight: bold">Bài viết</div>
+                <br />
+                <div style="display: flex;" v-for="bv in baiViets" :key="bv.id">
+                  <div style=" height: 200px">
+                    <img
+                      v-if="bv.anh_dai_dien"
+                      :src="bv.anh_dai_dien"
+                      style="width: 250px; max-height: 170px"
+                    />
+
+                    <img
+                      v-else
+                      src="../../assets/baiviet.png"
+                      style="width: 250px; max-height: 200px"
+                    />
+                  </div>
+                  <div style="height: auto; padding-left: 30px">
+                    <div style="display: flex;  align-items: flex-end">
+                      <div style="flex-grow: 1; height: 40px">
+                        <v-list-item-avatar style="max-width: 100%; max-height: 100%">
+                          <v-img v-if="avatar_url" :src="avatar_url"></v-img>
+                          <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                        </v-list-item-avatar>
+                      </div>
+                      <div style="flex-grow: 50;">
+                        <strong style="font-size: 18px">{{user.name}}</strong>
+                        {{bv.created_at}}
+                      </div>
+                    </div>
+                    <br />
+                    <router-link :to="'/baiviet/'+ bv.id">
+                      <div
+                        style="font-size: 18px; font-weight: bold; margin-bottom: 15px"
+                      >{{bv.tieu_de}}</div>
+                    </router-link>
+                    <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
+                  </div>
+                </div>
+              </v-container>
             </v-tab-item>
             <v-tab-item key="tab-2">
-              <v-card flat>
-                <v-card-text>Nội dung tab 2</v-card-text>
-              </v-card>
+              <v-row :gutters="20">
+                <v-col cols="6" v-for="us in users" :key="us.id">
+                  <v-row no-gutters>
+                    <v-col cols="5">
+                      <img
+                        v-if="us.anh_dai_dien"
+                        :src="endPointImage + us.anh_dai_dien"
+                        style="border: 1px solid grey; height: auto; width: 90%; border-radius: 10px"
+                      />
+                      <img
+                        v-else
+                        src="../../assets/avatar.jpg"
+                        style="border: 1px solid grey; height: auto; width: 90%; border-radius: 10px"
+                      />
+                    </v-col>
+                    <v-col cols="7">
+                      <div
+                        class="mb-3"
+                        style="font-size: 18px; color: #1F618D; font-weight: bold"
+                      >{{us.name}}</div>
+                      <div class="mb-2" style="font-size: 14px; color: #1B2631; width: 100%">
+                        <v-icon small>mdi-email</v-icon>
+                        <span class="ml-1">Email: {{us.email}}</span>
+                      </div>
+                      <div class="mb-2" style="font-size: 14px; color: #1B2631">
+                        <v-select
+                          prepend-icon="mdi-check"
+                          style="width: 80%;"
+                          v-model="us.quyen.id"
+                          dense
+                          :items="quyens"
+                          label="Chọn quyền"
+                          item-text="mo_ta"
+                          item-value="id"
+                          solo
+                        >
+                        </v-select>
+                      </div>
+                      <v-btn fab color="accent" x-small>
+                        <v-icon small>mdi-email</v-icon>
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-row>
             </v-tab-item>
             <v-tab-item key="tab-3">
               <v-card flat>
@@ -81,22 +160,6 @@
           </v-tabs-items>
         </div>
       </v-card-text>
-      <!-- <v-row>
-        <v-col cols="6">
-          <v-list-item>
-            <v-list-item-avatar>
-              <v-img src="../../assets/avatar.jpg"></v-img>
-            </v-list-item-avatar>
-
-            <v-list-item-content>
-              <v-list-item-title>dasdsa</v-list-item-title>
-              <v-list-item-subtitle></v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </v-col>
-        <v-col>
-        </v-col>
-      </v-row>-->
     </v-card>
   </v-container>
 </template>
@@ -113,11 +176,20 @@ export default {
           ten: "",
           mo_ta: ""
         }
-      }
+      },
+      baiViets: [],
+      users: [],
+      endPointImage: "",
+      quyens: [],
+      quyen_id: null
     };
   },
   created() {
     this.me();
+    this.getBaiViet();
+    this.getUser();
+    this.endPointImage = ImageUrl + "/";
+    this.getQuyen();
   },
   methods: {
     async me() {
@@ -127,8 +199,6 @@ export default {
         if (data.data.anh_dai_dien) {
           this.avatar_url = ImageUrl + "/" + data.data.anh_dai_dien;
         }
-
-        console.log(this.user);
       } catch (error) {
         Exception.hanle(error);
       }
@@ -163,6 +233,24 @@ export default {
             console.log(error);
           });
       }
+    },
+    async getBaiViet() {
+      let data = await axios.get("baivietuser");
+      this.baiViets = data.data;
+    },
+    parseText(text) {
+      if (text) {
+        return md.parse(text);
+      } else return null;
+    },
+    async getUser() {
+      let data = await axios.get("alluser");
+      this.users = data.data;
+      console.log(this.users);
+    },
+    async getQuyen() {
+      let data = await axios.get("allquyen");
+      this.quyens = data.data;
     }
   }
 };
