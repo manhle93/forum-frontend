@@ -125,7 +125,6 @@ export default {
       try {
         let data = await axios.get(`cauhoichude/${this.$route.params.id}`);
         this.hoiDap = data.data.data.data;
-        console.log(this.hoiDap);
       } catch (error) {
         console.log(error);
       }

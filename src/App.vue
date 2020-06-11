@@ -181,8 +181,6 @@ export default {
           this.noidung = " Đã bình luận về bài viết của bạn";
           this.userBinhLuan = e.user;
           this.snackbar = true;
-          console.log(e);
-          console.log(this.snackbar);
           this.getThongBao();
         }
       });
