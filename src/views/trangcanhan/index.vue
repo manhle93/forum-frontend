@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-snackbar v-model="snackbar">{{ noidung }}</v-snackbar>
     <v-row justify="space-around">
       <!-- <v-img
         v-if="chuDe.anh_dai_dien"
@@ -51,7 +52,7 @@
           <v-spacer />
           <v-layout>
             <v-btn small fab style="position: absolute; top 20px; right: 20px">
-              <v-icon>mdi-email</v-icon>
+              <v-icon>mdi-message</v-icon>
             </v-btn>
           </v-layout>
         </v-layout>
@@ -130,7 +131,11 @@
                         <v-icon small>mdi-email</v-icon>
                         <span class="ml-1">Email: {{us.email}}</span>
                       </div>
-                      <div class="mb-2" style="font-size: 14px; color: #1B2631">
+                      <div
+                        class="mb-2"
+                        style="font-size: 14px; color: #1B2631"
+                        v-if="user.quyen_id == 2"
+                      >
                         <v-select
                           prepend-icon="mdi-check"
                           style="width: 80%;"
@@ -141,12 +146,18 @@
                           item-text="mo_ta"
                           item-value="id"
                           solo
-                        >
-                        </v-select>
+                          @change="doiQuyen(us.id, us.quyen.id)"
+                        ></v-select>
                       </div>
-                      <v-btn fab color="accent" x-small>
-                        <v-icon small>mdi-email</v-icon>
+                      <div v-else class="mb-2" style="font-size: 14px; color: #1B2631; width: 100%">
+                        <v-icon small>mdi-check</v-icon>
+                        <span class="ml-1">Quyền: {{us.quyen.mo_ta}}</span>
+                      </div>
+                      <router-link :to="'tinnhan/' + us.id">
+                      <v-btn class="mx-2" fab dark small color="primary">
+                        <v-icon dark>mdi-message</v-icon>
                       </v-btn>
+                      </router-link>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -177,6 +188,8 @@ export default {
           mo_ta: ""
         }
       },
+      snackbar: false,
+      noidung: "",
       baiViets: [],
       users: [],
       endPointImage: "",
@@ -202,6 +215,11 @@ export default {
       } catch (error) {
         Exception.hanle(error);
       }
+    },
+    async doiQuyen(id, quyen_id) {
+      await axios.post("doiquyen/" + id, { quyen_id: quyen_id });
+      this.noidung = "Đã thay đổi quyền người dùng";
+      this.snackbar = true;
     },
     uploadAnh() {
       this.$refs["upload-image"].click();
@@ -246,7 +264,6 @@ export default {
     async getUser() {
       let data = await axios.get("alluser");
       this.users = data.data;
-      console.log(this.users);
     },
     async getQuyen() {
       let data = await axios.get("allquyen");
