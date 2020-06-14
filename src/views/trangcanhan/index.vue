@@ -154,9 +154,9 @@
                         <span class="ml-1">Quyền: {{us.quyen.mo_ta}}</span>
                       </div>
                       <router-link :to="'tinnhan/' + us.id">
-                      <v-btn class="mx-2" fab dark small color="primary">
-                        <v-icon dark>mdi-message</v-icon>
-                      </v-btn>
+                        <v-btn class="mx-2" fab dark small color="primary">
+                          <v-icon dark>mdi-message</v-icon>
+                        </v-btn>
                       </router-link>
                     </v-col>
                   </v-row>
@@ -164,9 +164,106 @@
               </v-row>
             </v-tab-item>
             <v-tab-item key="tab-3">
-              <v-card flat>
-                <v-card-text>Nội dung tab 3</v-card-text>
-              </v-card>
+              <v-row>
+                <v-col xl="2" lg="3" md="4" sm="6">
+                  <v-card
+                    class="mx-auto"
+                    max-width="250"
+                    style="border-radius: 15px;"
+                    @click="showFormAddChuDe"
+                  >
+                    <v-card-text style="text-align: center" class="pt-2 pb-2">
+                      <v-icon style="font-size: 150px">mdi-plus</v-icon>
+                    </v-card-text>
+                    <v-card-subtitle class="pt-0 pb-0">Tạo chủ đề mới</v-card-subtitle>
+                    <v-btn color="blue" text>Thêm chủ đề</v-btn>
+                  </v-card>
+                </v-col>
+                <v-col xl="2" lg="3" md="4" sm="6">
+                  <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
+                    <!-- <v-img
+                      class="white--text align-end"
+                      height="150px"
+                      v-if="chuDe.anh_dai_dien"
+                      :src="chuDe.anh_dai_dien"
+                    >
+                      <v-card-title>Sách</v-card-title>
+                    </v-img>-->
+                    <v-img
+                      class="white--text align-end"
+                      height="150px"
+                      src="../../assets/chuDe.jpg"
+                    >
+                      <v-card-title>Sách</v-card-title>
+                    </v-img>
+                    <v-card-subtitle class="pb-0">Bài đăng</v-card-subtitle>
+                    <v-layout class="pr-3">
+                      <v-btn color="orange" text>Xem</v-btn>
+                      <v-spacer />
+                      <v-btn small icon color="indigo" @click v-if="loggedIn">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn small icon color="pink" @click v-if="loggedIn">
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </v-layout>
+                  </v-card>
+                </v-col>
+              </v-row>
+
+              <v-dialog v-model="showFormChuDe" width="500">
+                <v-card>
+                  <v-card-title
+                    v-if="editChuDe"
+                    class="headline grey lighten-2"
+                    primary-title
+                  >Cập nhật chủ đề</v-card-title>
+                  <v-card-title v-else class="headline grey lighten-2" primary-title>Thêm chủ đề</v-card-title>
+                  <v-card-text class="mt-6">
+                    <form>
+                      <span>Tên chủ đề</span>
+                      <v-text-field
+                        class="mt-3"
+                        v-model="formChuDe.ten"
+                        placeholder="Nhập tiêu đề bài viết"
+                        solo
+                        :rules="tenChuDeRules"
+                      ></v-text-field>
+                      <v-layout class="mb-6">
+                        <v-btn small @click="uploadAnhChuDe">
+                          <input
+                            ref="upload-image-chu-de"
+                            class="upload-image"
+                            type="file"
+                            @change="handleChangeAnhChuDe($event)"
+                          />
+                          <v-icon left dark>mdi-image-area</v-icon>Upload Ảnh đại diện
+                        </v-btn>
+                        <img
+                          v-if="formChuDe.anh_dai_dien"
+                          :src="formChuDe.anh_dai_dien"
+                          style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
+                          class="ml-6"
+                        />
+                      </v-layout>
+                      <span>Mô tả</span>
+                      <v-textarea
+                        class="mt-3"
+                        v-model="formChuDe.mo_ta"
+                        placeholder="Nhập tiêu đề bài viết"
+                        solo
+                      ></v-textarea>
+                    </form>
+                  </v-card-text>
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn v-if="editChuDe" color="primary" text @click="capNhatChuDe">Cập nhật</v-btn>
+                    <v-btn v-else color="primary" text @click="themChuDe">Thêm chủ đề</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </v-tab-item>
           </v-tabs-items>
         </div>
@@ -180,7 +277,9 @@ import md from "marked";
 export default {
   data() {
     return {
+      loggedIn: true,
       tab: "tab-1",
+      showFormChuDe: false,
       avatar_url: "",
       user: {
         quyen: {
@@ -188,13 +287,23 @@ export default {
           mo_ta: ""
         }
       },
+      editChuDe: false,
+      formChuDe: {
+        ten: "",
+        anh_dai_dien: null,
+        mo_ta: null
+      },
       snackbar: false,
       noidung: "",
       baiViets: [],
       users: [],
       endPointImage: "",
       quyens: [],
-      quyen_id: null
+      quyen_id: null,
+      tenChuDeRules: [
+        v => !!v || "Tên chủ đề không thể bỏ trống",
+        v => (v && v.length >= 5) || "Tên chủ đề tối thiểu 5 ký tự"
+      ]
     };
   },
   created() {
@@ -205,6 +314,53 @@ export default {
     this.getQuyen();
   },
   methods: {
+    showFormAddChuDe() {
+      this.editChuDe = false;
+      this.showFormChuDe = true;
+      this.formChuDe = {
+        ten: "",
+        anh_dai_dien: null,
+        mo_ta: null
+      };
+    },
+    async themChuDe() {
+      try {
+        let data = await axios.post("chude", this.formChuDe);
+        this.thanhCong = "Tạo chủ đề thành công";
+        this.snackbar = true;
+        this.getChuDe();
+        this.showFormChuDe = false;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async showFormEditChuDe(id) {
+      this.editChuDe = true;
+      this.showFormChuDe = true;
+      try {
+        let data = await axios.get(`/chude/${id}`);
+        this.formChuDe.ten = data.data.ten;
+        this.formChuDe.mo_ta = data.data.mo_ta;
+        this.formChuDe.anh_dai_dien = data.data.anh_dai_dien;
+        this.formChuDe.id = data.data.id;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async capNhatChuDe() {
+      try {
+        await axios.put("chude/" + this.formChuDe.id, this.formChuDe);
+        this.thanhCong = "Cập nhật chủ đề thành công";
+        this.snackbar = true;
+        this.showFormChuDe = false;
+        this.getChuDe();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    uploadAnhChuDe() {
+      this.$refs["upload-image-chu-de"].click();
+    },
     async me() {
       try {
         let data = await axios.get("/userinfo");
@@ -213,7 +369,7 @@ export default {
           this.avatar_url = ImageUrl + "/" + data.data.anh_dai_dien;
         }
       } catch (error) {
-        Exception.hanle(error);
+        // Exception.hanle(error);
       }
     },
     async doiQuyen(id, quyen_id) {
