@@ -30,7 +30,7 @@
                 class="white--text align-end"
                 height="150px"
                 v-if="chuDe.anh_dai_dien"
-                :src="chuDe.anh_dai_dien"
+                :src="endPointImage + chuDe.anh_dai_dien"
               >
                 <v-card-title>{{chuDe.ten}}</v-card-title>
               </v-img>
@@ -251,8 +251,8 @@
                 <v-icon left dark>mdi-image-area</v-icon>Upload Ảnh đại diện
               </v-btn>
               <img
-                v-if="formChuDe.anh_dai_dien"
-                :src="formChuDe.anh_dai_dien"
+                v-if="anhChuDe"
+                :src="anhChuDe"
                 style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
                 class="ml-6"
               />
@@ -285,7 +285,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
-          <v-btn color="primary" text @click="xoaChuDe">Đồng ý</v-btn>
+          <v-btn color="primary" text @click="xoaChuDe()">Đồng ý</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -332,6 +332,7 @@ export default {
         anh_dai_dien: null,
         mo_ta: null
       },
+      anhChuDe: null,
       xoa: false,
       tieuDeXoa: "",
       noiDungXoa: "",
@@ -340,6 +341,7 @@ export default {
       loiUpload: "",
       thanhCong: "",
       chuDes: [],
+      endPointImage: "",
       tenChuDeRules: [
         v => !!v || "Tên chủ đề không thể bỏ trống",
         v => (v && v.length >= 5) || "Tên chủ đề tối thiểu 5 ký tự"
@@ -361,6 +363,7 @@ export default {
     this.getBaiViet();
     this.getChuDeBaiViet();
     this.getCauHoi();
+    this.endPointImage = ImageUrl + "/";
     
   },
   methods: {
@@ -499,6 +502,8 @@ export default {
           .post("/uploadanh", data)
           .then(res => {
             this.formChuDe.anh_dai_dien = ImageUrl + "/" + res.data;
+            this.anhChuDe = ImageUrl + "/" + res.data;
+
           })
           .catch(error => {
             console.log(error);

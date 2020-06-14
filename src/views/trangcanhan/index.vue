@@ -1,6 +1,8 @@
 <template>
   <v-container>
     <v-snackbar v-model="snackbar">{{ noidung }}</v-snackbar>
+    <v-snackbar top color="success" v-model="snackbarSP">{{ thanhCong }}</v-snackbar>
+    <v-snackbar top color="warning" v-model="uploadLoi">{{loiUpload}}</v-snackbar>
     <v-row justify="space-around">
       <!-- <v-img
         v-if="chuDe.anh_dai_dien"
@@ -100,6 +102,21 @@
                       <div
                         style="font-size: 18px; font-weight: bold; margin-bottom: 15px"
                       >{{bv.tieu_de}}</div>
+                      <div style="float: right">
+                      <v-btn class="mx-2" fab dark small color="cyan" @click="editBaiViet">
+                        <v-icon dark>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
+                        class="mx-2"
+                        fab
+                        dark
+                        small
+                        color="pink"
+                        @click="xoaBaiViet"
+                      >
+                        <v-icon dark>mdi-delete</v-icon>
+                      </v-btn>
+                      </div>
                     </router-link>
                     <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
                   </div>
@@ -175,35 +192,34 @@
                     <v-card-text style="text-align: center" class="pt-2 pb-2">
                       <v-icon style="font-size: 150px">mdi-plus</v-icon>
                     </v-card-text>
-                    <v-card-subtitle class="pt-0 pb-0">Tạo chủ đề mới</v-card-subtitle>
-                    <v-btn color="blue" text>Thêm chủ đề</v-btn>
+                    <v-card-subtitle class="pt-0 pb-0">Thêm sản phẩm</v-card-subtitle>
+                    <v-btn color="blue" text>Thêm sản phẩm</v-btn>
                   </v-card>
                 </v-col>
-                <v-col xl="2" lg="3" md="4" sm="6">
+                <v-col xl="2" lg="3" md="4" sm="6" v-for="sanpham in sanPhams" :key="sanpham.id">
                   <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
-                    <!-- <v-img
-                      class="white--text align-end"
-                      height="150px"
-                      v-if="chuDe.anh_dai_dien"
-                      :src="chuDe.anh_dai_dien"
-                    >
-                      <v-card-title>Sách</v-card-title>
-                    </v-img>-->
                     <v-img
                       class="white--text align-end"
-                      height="150px"
-                      src="../../assets/chuDe.jpg"
-                    >
-                      <v-card-title>Sách</v-card-title>
-                    </v-img>
-                    <v-card-subtitle class="pb-0">Bài đăng</v-card-subtitle>
+                      height="250px"
+                      v-if="sanpham.anh_dai_dien"
+                      :src="endPointImage + sanpham.anh_dai_dien"
+                    ></v-img>
+                    <v-img
+                      v-else
+                      class="white--text align-end"
+                      height="250px"
+                      src="https://salt.tikicdn.com/cache/280x280/ts/product/bc/23/09/76d09086ceaa3d0d9905fe56644e9e9e.jpg"
+                    ></v-img>
+                    <v-card-text>{{sanpham.ten_san_pham}}</v-card-text>
+                    <v-card-title>{{sanpham.gia_ban}} đ</v-card-title>
+                    <v-card-subtitle>Giá nhập: {{sanpham.gia_nhap}} đ</v-card-subtitle>
                     <v-layout class="pr-3">
                       <v-btn color="orange" text>Xem</v-btn>
                       <v-spacer />
-                      <v-btn small icon color="indigo" @click v-if="loggedIn">
+                      <v-btn small icon color="indigo" @click="showFormEditChuDe(sanpham)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
-                      <v-btn small icon color="pink" @click v-if="loggedIn">
+                      <v-btn small icon color="pink" @click="confirmXoaSanPham(sanpham.id)">
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
                     </v-layout>
@@ -211,37 +227,59 @@
                 </v-col>
               </v-row>
 
-              <v-dialog v-model="showFormChuDe" width="500">
+              <v-dialog v-model="showFormSanPham" width="500">
                 <v-card>
-                  <v-card-title
-                    v-if="editChuDe"
-                    class="headline grey lighten-2"
-                    primary-title
-                  >Cập nhật chủ đề</v-card-title>
-                  <v-card-title v-else class="headline grey lighten-2" primary-title>Thêm chủ đề</v-card-title>
-                  <v-card-text class="mt-6">
-                    <form>
-                      <span>Tên chủ đề</span>
+                  <form ref="form">
+                    <v-card-title
+                      v-if="editSanPham"
+                      class="headline grey lighten-2"
+                      primary-title
+                    >Cập nhật sản phẩm</v-card-title>
+                    <v-card-title v-else class="headline grey lighten-2" primary-title>Thêm sản phẩm</v-card-title>
+                    <v-card-text class="mt-6">
+                      <span>Tên sản phẩm</span>
                       <v-text-field
                         class="mt-3"
-                        v-model="formChuDe.ten"
-                        placeholder="Nhập tiêu đề bài viết"
+                        v-model="formSanPham.ten_san_pham"
+                        placeholder="Nhập tên sản phẩm"
                         solo
-                        :rules="tenChuDeRules"
+                        :rules="tenSanPhamRules"
                       ></v-text-field>
+                      <v-row>
+                        <v-col cols="6">
+                          <span>Giá nhập</span>
+                          <v-text-field
+                            type="number"
+                            class="mt-3"
+                            v-model="formSanPham.gia_nhap"
+                            placeholder="Nhập vốn nhập sản phẩm"
+                            solo
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <span>Giá bán sản phẩm</span>
+                          <v-text-field
+                            type="number"
+                            class="mt-3"
+                            v-model="formSanPham.gia_ban"
+                            placeholder="Nhập giá bán sản phẩm"
+                            solo
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
                       <v-layout class="mb-6">
-                        <v-btn small @click="uploadAnhChuDe">
+                        <v-btn small @click="uploadAnhSanPham">
                           <input
                             ref="upload-image-chu-de"
                             class="upload-image"
                             type="file"
-                            @change="handleChangeAnhChuDe($event)"
+                            @change="handleChangeAnhSanPham($event)"
                           />
                           <v-icon left dark>mdi-image-area</v-icon>Upload Ảnh đại diện
                         </v-btn>
                         <img
-                          v-if="formChuDe.anh_dai_dien"
-                          :src="formChuDe.anh_dai_dien"
+                          v-if="anhSanPham"
+                          :src="anhSanPham"
                           style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
                           class="ml-6"
                         />
@@ -249,19 +287,24 @@
                       <span>Mô tả</span>
                       <v-textarea
                         class="mt-3"
-                        v-model="formChuDe.mo_ta"
-                        placeholder="Nhập tiêu đề bài viết"
+                        v-model="formSanPham.mo_ta"
+                        placeholder="Nhập mô tả sản phẩm"
                         solo
                       ></v-textarea>
-                    </form>
-                  </v-card-text>
-                  <v-divider></v-divider>
+                    </v-card-text>
+                    <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn v-if="editChuDe" color="primary" text @click="capNhatChuDe">Cập nhật</v-btn>
-                    <v-btn v-else color="primary" text @click="themChuDe">Thêm chủ đề</v-btn>
-                  </v-card-actions>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        v-if="editSanPham"
+                        color="primary"
+                        text
+                        @click="capNhatSanPham"
+                      >Cập nhật</v-btn>
+                      <v-btn v-else color="primary" text @click="themSanPham">Thêm sản phẩm</v-btn>
+                    </v-card-actions>
+                  </form>
                 </v-card>
               </v-dialog>
             </v-tab-item>
@@ -269,6 +312,19 @@
         </div>
       </v-card-text>
     </v-card>
+    <v-dialog v-model="xoa" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>{{tieuDeXoa}}</v-card-title>
+        <v-card-text style="font-size: 18px;">{{noiDungXoa}}</v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
+          <v-btn color="primary" text @click="xoaNoiDung(doiTuongXoa)">Đồng ý</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -277,9 +333,16 @@ import md from "marked";
 export default {
   data() {
     return {
+      xoa: false,
+      tieuDeXoa: null,
+      noiDungXoa: "",
+      doiTuongXoa: "",
+      loiUpload: null,
+      uploadLoi: false,
       loggedIn: true,
       tab: "tab-1",
-      showFormChuDe: false,
+      showFormSanPham: false,
+      anhSanPham: null,
       avatar_url: "",
       user: {
         quyen: {
@@ -287,9 +350,12 @@ export default {
           mo_ta: ""
         }
       },
-      editChuDe: false,
-      formChuDe: {
-        ten: "",
+      editSanPham: false,
+      formSanPham: {
+        id: null,
+        ten_san_pham: "",
+        gia_ban: null,
+        gia_nhap: null,
         anh_dai_dien: null,
         mo_ta: null
       },
@@ -297,12 +363,16 @@ export default {
       noidung: "",
       baiViets: [],
       users: [],
+      thanhCong: null,
+      snackbar: false,
       endPointImage: "",
+      sanPhams: [],
       quyens: [],
       quyen_id: null,
-      tenChuDeRules: [
-        v => !!v || "Tên chủ đề không thể bỏ trống",
-        v => (v && v.length >= 5) || "Tên chủ đề tối thiểu 5 ký tự"
+      snackbarSP: false,
+      tenSanPhamRules: [
+        v => !!v || "Tên sản phẩm không thể bỏ trống",
+        v => (v && v.length >= 3) || "Tên sản phẩm tối thiểu 3 ký tự"
       ]
     };
   },
@@ -312,54 +382,85 @@ export default {
     this.getUser();
     this.endPointImage = ImageUrl + "/";
     this.getQuyen();
+    this.getSanPham();
   },
   methods: {
     showFormAddChuDe() {
-      this.editChuDe = false;
-      this.showFormChuDe = true;
-      this.formChuDe = {
-        ten: "",
+      this.editSanPham = false;
+      this.showFormSanPham = true;
+      this.formSanPham = {
+        id: null,
+        ten_san_pham: "",
+        gia_ban: null,
+        gia_nhap: null,
         anh_dai_dien: null,
         mo_ta: null
       };
     },
-    async themChuDe() {
+    async themSanPham() {
       try {
-        let data = await axios.post("chude", this.formChuDe);
-        this.thanhCong = "Tạo chủ đề thành công";
-        this.snackbar = true;
-        this.getChuDe();
-        this.showFormChuDe = false;
+        let data = await axios.post("sanpham", this.formSanPham);
+        this.thanhCong = "Tạo sản phẩm thành công";
+        this.snackbarSP = true;
+        this.getSanPham();
+        this.showFormSanPham = false;
       } catch (error) {
         console.log(error);
       }
     },
-    async showFormEditChuDe(id) {
-      this.editChuDe = true;
-      this.showFormChuDe = true;
+    async showFormEditChuDe(data) {
+      this.editSanPham = true;
+      this.showFormSanPham = true;
+      this.formSanPham.ten_san_pham = data.ten_san_pham;
+      this.formSanPham.mo_ta = data.mo_ta;
+      this.formSanPham.anh_dai_dien = data.anh_dai_dien;
+      this.formSanPham.id = data.id;
+      this.formSanPham.gia_ban = data.gia_ban;
+      this.formSanPham.gia_nhap = data.gia_nhap;
+      this.anhSanPham = this.endPointImage + data.anh_dai_dien;
+    },
+    async capNhatSanPham() {
       try {
-        let data = await axios.get(`/chude/${id}`);
-        this.formChuDe.ten = data.data.ten;
-        this.formChuDe.mo_ta = data.data.mo_ta;
-        this.formChuDe.anh_dai_dien = data.data.anh_dai_dien;
-        this.formChuDe.id = data.data.id;
+        await axios.put("sanpham/" + this.formSanPham.id, this.formSanPham);
+        this.thanhCong = "Cập nhật sản phẩm thành công";
+        this.snackbarSP = true;
+        this.showFormSanPham = false;
+        this.getSanPham();
       } catch (error) {
         console.log(error);
       }
     },
-    async capNhatChuDe() {
-      try {
-        await axios.put("chude/" + this.formChuDe.id, this.formChuDe);
-        this.thanhCong = "Cập nhật chủ đề thành công";
-        this.snackbar = true;
-        this.showFormChuDe = false;
-        this.getChuDe();
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    uploadAnhChuDe() {
+    uploadAnhSanPham() {
       this.$refs["upload-image-chu-de"].click();
+    },
+    handleChangeAnhSanPham(e) {
+      let files = e.target.files;
+      let data = new FormData();
+      data.append("file", files[0]);
+
+      var filePath = files[0].name.split(".").pop(); //lấy định dạng file
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      const isLt2M = files[0].size / 1024 / 1024 < 20;
+      if (!isLt2M) {
+        this.loiUpload = "Kích thước tập tin tối đa 20MB";
+        this.uploadLoi = true;
+        return false;
+      }
+      if (!dinhDangChoPhep.find(el => el == filePath)) {
+        this.loiUpload = "Định dạng file không hợp lệ, hãy upload file ảnh";
+        this.uploadLoi = true;
+        return;
+      } else {
+        axios
+          .post("/uploadanh", data)
+          .then(res => {
+            this.formSanPham.anh_dai_dien = res.data;
+            this.anhSanPham = ImageUrl + "/" + res.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
     },
     async me() {
       try {
@@ -424,7 +525,30 @@ export default {
     async getQuyen() {
       let data = await axios.get("allquyen");
       this.quyens = data.data;
-    }
+    },
+    async getSanPham() {
+      let data = await axios.get("sanpham");
+      this.sanPhams = data.data;
+    },
+    async xoaNoiDung(data) {
+      if (data == "san_pham") {
+        await axios.delete("sanpham/" + this.formSanPham.id);
+        this.snackbarSP = true;
+        this.thanhCong = "Xóa sản phẩm thành công";
+        this.getSanPham();
+      }
+    },
+    async confirmXoaSanPham(id) {
+      this.xoa = true;
+      this.doiTuongXoa = "san_pham";
+      this.formSanPham.id = id;
+      this.tieuDeXoa = "Xóa sản phẩm";
+      this.noiDungXoa = "Bạn có chắc chắn muốn xóa sản phẩm này?";
+    },
+    editBaiViet(){
+
+    },
+    xoaBaiViet(){}
   }
 };
 </script>
