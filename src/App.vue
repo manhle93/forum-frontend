@@ -21,8 +21,8 @@
       ></v-text-field>
       <v-spacer></v-spacer>
       <v-toolbar-title style="width: 150px" class="ml-0 pl-1">
-        <v-btn color="#F57F17">
-          <v-icon left dark>mdi-shopping</v-icon>Mua sắm
+        <v-btn color="#F57F17" @click="chuyenTrang">
+          <v-icon left dark>mdi-shopping</v-icon>{{tenButton}}
         </v-btn>
       </v-toolbar-title>
       <v-toolbar-title style="width: 130px" class="ml-0 pl-1" v-if="!loggedIn">
@@ -127,6 +127,7 @@ export default {
     name: "",
     anh_dai_dien: null,
     user: {},
+    tenButton: 'Mua sắm',
     thongBaoDaDoc: [],
     thongBaoChuaDoc: [],
     thongBaoMoi: 0,
@@ -173,6 +174,18 @@ export default {
         this.$router.push("/baiviet/" + data.data.bai_viet_id);
       } catch (error) {
         console.log(error);
+      }
+    },
+    chuyenTrang(){
+      if(this.tenButton == 'Mua sắm'){
+        this.$router.push('/muasam')
+        this.tenButton = 'Diễn đàn'
+        return
+      }
+      if(this.tenButton == 'Diễn đàn'){
+        this.$router.push('/')
+        this.tenButton = 'Mua sắm'
+        return
       }
     },
     listening() {

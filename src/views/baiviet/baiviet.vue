@@ -15,7 +15,15 @@
         <v-btn class="mx-2" fab dark small color="cyan" v-if="own" @click="edit">
           <v-icon dark>mdi-pencil</v-icon>
         </v-btn>
-        <v-btn v-if="own" class="mx-2" fab dark small color="pink" @click="xoaBaiViet">
+        <v-btn
+          v-if="own || quyen_id == 2"
+          class="mx-2"
+          fab
+          dark
+          small
+          color="pink"
+          @click="xoaBaiViet"
+        >
           <v-icon dark>mdi-delete</v-icon>
         </v-btn>
       </v-card-title>
@@ -60,12 +68,16 @@
         </v-btn>
         <span class="ml-3" style="font-size: 20px">{{baiViet.like_count}}</span>
       </v-layout>
+
+      <v-btn dark class="mb-3 ml-3">
+        <v-icon left>mdi-message</v-icon>{{binhLuans.length}} bình luận
+      </v-btn>
     </v-card>
-    <v-card class="mt-8">
+    <v-card class="mt-2" v-if="loggedIn" style="border-radius: 20px">
       <v-row>
         <v-col cols="1">
           <v-list-item-avatar class="ml-8">
-            <v-img v-if="baiViet.user.anh_dai_dien" :src="baiViet.user.anh_dai_dien"></v-img>
+            <v-img v-if="user.anh_dai_dien" :src="endPoint + user.anh_dai_dien"></v-img>
             <v-img v-else src="../../assets/avatar.jpg"></v-img>
           </v-list-item-avatar>
         </v-col>
@@ -86,12 +98,9 @@
           </form>
         </v-col>
       </v-row>
-      <v-btn dark class="mb-5 ml-10">
-        <v-icon left>mdi-message</v-icon>20 bình luận
-      </v-btn>
     </v-card>
 
-    <v-card class="mt-1">
+    <v-card class="mt-1" style="border-radius: 15px">
       <v-row v-for="binhluan in binhLuans" :key="binhluan.id">
         <v-col cols="1">
           <v-list-item-avatar class="ml-8">
@@ -116,7 +125,7 @@
                 dark
                 x-small
                 color="pink"
-                v-if="binhLuanCuaToi(binhluan.user_id)"
+                v-if="binhLuanCuaToi(binhluan.user_id) || quyen_id == 2"
                 @click="xoaBinhLuan(binhluan.id)"
               >
                 <v-icon dark>mdi-delete</v-icon>
@@ -156,12 +165,14 @@
 import md from "marked";
 export default {
   data: () => ({
+    loggedIn: false,
     baiViet: {
       chu_de: {
         ten: ""
       },
       user: {
-        name: ""
+        name: "",
+        anh_dai_dien: null
       }
     },
     like: {
@@ -174,6 +185,7 @@ export default {
       noi_dung: "",
       bai_viet_id: null
     },
+    quyen_id: null,
     dangBL: true,
     binhLuans: [],
     own: false,
@@ -218,16 +230,14 @@ export default {
       }
     },
     async xoaBaiViet() {
-      if (this.form.noi_dung.length > 5) {
-        try {
-          await axios.delete("/baiviet/" + this.$route.params.id);
-          this.thanhCong = "Xóa bài viết thành công";
-          this.snackbar = true;
-          setTimeout(() => {
-            this.$router.push("/");
-          }, 2000);
-        } catch (error) {}
-      }
+      try {
+        await axios.delete("/baiviet/" + this.$route.params.id);
+        this.thanhCong = "Xóa bài viết thành công";
+        this.snackbar = true;
+        setTimeout(() => {
+          this.$router.push("/");
+        }, 2000);
+      } catch (error) {}
     },
     edit() {
       this.$router.push(`/suabaiviet/${this.$route.params.id}`);
@@ -275,6 +285,14 @@ export default {
       this.like.type = "";
       this.getBinhLuan();
     },
+    async me() {
+      try {
+        let data = await axios.post("/auth/me");
+        this.user = data.data;
+      } catch (error) {
+        Exception.hanle(error);
+      }
+    },
     listening() {
       Echo.channel("likeChannel").listen("LikeEvent", e => {
         if (e.type == "bai_viet") {
@@ -287,6 +305,11 @@ export default {
     }
   },
   created() {
+    this.loggedIn = User.loggedIn();
+    if(this.loggedIn){
+      this.me()
+    }
+    this.quyen_id = User.quyenId();
     this.getData();
     this.getBinhLuan();
     this.listening();

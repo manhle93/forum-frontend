@@ -46,10 +46,25 @@ Vue.use(VueRouter)
     component: () => import("../views/trangcanhan/index"),
   },
   {
+    path: '/canhan:id',
+    name: 'viewtrangcanhan',
+    component: () => import("../views/trangcanhan/viewtrangcanhan"),
+  },
+  {
     path: '/tinnhan/:id',
     name: 'tinnhan',
     component: () => import("../views/tinnhan/index"),
-  }
+  },
+  {
+    path: '/sanpham/:id',
+    name: 'sanpham',
+    component: () => import("../views/muaban/sanpham"),
+  },
+  {
+    path: '/muasam',
+    name: 'muasam',
+    component: () => import("../views/muaban/index"),
+  },
 ]
 
 const router = new VueRouter({

@@ -43,15 +43,21 @@
                 <v-card-title>{{chuDe.ten}}</v-card-title>
               </v-img>
               <v-card-subtitle class="pb-0">{{chuDe.so_bai_viet}} Bài đăng</v-card-subtitle>
-              <v-layout class="pr-3" >
+              <v-layout class="pr-3">
                 <router-link :to="`chude/${chuDe.id}`">
                   <v-btn color="orange" text>Xem</v-btn>
                 </router-link>
                 <v-spacer />
-                <v-btn small icon color="indigo" @click="showFormEditChuDe(chuDe.id)" v-if="loggedIn">
+                <v-btn
+                  small
+                  icon
+                  color="indigo"
+                  @click="showFormEditChuDe(chuDe.id)"
+                  v-if="loggedIn && quyen_id == 2"
+                >
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)" v-if="loggedIn">
+                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)" v-if="loggedIn && quyen_id == 2">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </v-layout>
@@ -153,16 +159,41 @@
           <div style=" height: 200px">
             <img
               v-if="hoi.anh_dai_dien"
-              :src="hoi.anh_dai_dien"
+              :src="endPointImage + hoi.anh_dai_dien"
               style="width: 250px; max-height: 170px"
             />
 
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
-          <div style="height: auto; padding-left: 30px">
-            <router-link :to="'baiviet/'+ hoi.id">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
-            </router-link>
+          <div style="height: auto; padding-left: 30px; width: 100%">
+            <v-layout>
+              <router-link :to="'baiviet/'+ hoi.id">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
+              </router-link>
+              <v-spacer />
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="cyan"
+                @click="editBaiViet(hoi.id)"
+                v-if="cuaToi(hoi.user_id)"
+              >
+                <v-icon dark>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="pink"
+                @click="confirmXoaBaiViet(hoi.id)"
+                v-if="cuaToi(hoi.user_id) || quyen_id == 2"
+              >
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </v-layout>
             <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
@@ -202,15 +233,40 @@
 
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
-          <div style="height: auto; padding-left: 30px">
-            <router-link :to="'baiviet/'+ bv.id">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
-            </router-link>
+          <div style="height: auto; padding-left: 30px; width: 100%">
+            <v-layout>
+              <router-link :to="'baiviet/'+ bv.id">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
+              </router-link>
+              <v-spacer />
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="cyan"
+                @click="editBaiViet(bv.id)"
+                v-if="cuaToi(bv.user_id)"
+              >
+                <v-icon dark>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="pink"
+                @click="confirmXoaBaiViet(bv.id)"
+                v-if="cuaToi(bv.user_id) || quyen_id == 2"
+              >
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </v-layout>
             <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
                 <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
-                  <v-img v-if="bv.user.anh_dai_dien" :src="bv.user.anh_dai_dien"></v-img>
+                  <v-img v-if="bv.user.anh_dai_dien" :src="endPointImage + bv.user.anh_dai_dien"></v-img>
                   <v-img v-else src="@/assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
               </div>
@@ -285,7 +341,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
-          <v-btn color="primary" text @click="xoaChuDe()">Đồng ý</v-btn>
+          <v-btn color="primary" text @click="xoaNoiDung(noidungxoa)">Đồng ý</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -306,6 +362,7 @@ export default {
       totalPageChuDe: 1,
       dataChuDe: [],
       showFormChuDe: false,
+      noidungxoa: "",
       items: [
         {
           src: "bn3.jpg"
@@ -315,7 +372,7 @@ export default {
         },
         {
           src: "bn1.jpg"
-        },
+        }
       ],
       hoiDap: [],
       baiViet: [],
@@ -332,6 +389,8 @@ export default {
         anh_dai_dien: null,
         mo_ta: null
       },
+      bai_viet_id: null,
+      quyen_id: null,
       anhChuDe: null,
       xoa: false,
       tieuDeXoa: "",
@@ -358,13 +417,13 @@ export default {
     };
   },
   created() {
-    this.loggedIn = User.loggedIn()
+    this.loggedIn = User.loggedIn();
+    this.quyen_id = User.quyenId();
     this.getChuDe();
     this.getBaiViet();
     this.getChuDeBaiViet();
     this.getCauHoi();
     this.endPointImage = ImageUrl + "/";
-    
   },
   methods: {
     async PaginateChuDe() {
@@ -503,7 +562,6 @@ export default {
           .then(res => {
             this.formChuDe.anh_dai_dien = ImageUrl + "/" + res.data;
             this.anhChuDe = ImageUrl + "/" + res.data;
-
           })
           .catch(error => {
             console.log(error);
@@ -562,23 +620,46 @@ export default {
     },
     confirmXoaChuDe(id) {
       this.xoa = true;
+      this.noidungxoa = "chu_de";
       this.formChuDe.id = id;
       this.tieuDeXoa = "Xóa chủ đề";
       this.noiDungXoa =
         "Bạn có chắc chắn muốn xóa chủ đề này cùng toàn bộ bài viết bên trong ?";
     },
-    async xoaChuDe() {
+    async xoaNoiDung(data) {
       try {
-        await axios.delete("chude/" + this.formChuDe.id);
-        this.thanhCong = "Xóa chủ đề thành công";
-        this.snackbar = true;
-        this.xoa = false;
-        this.getChuDe();
+        if (data == "chu_de") {
+          await axios.delete("chude/" + this.formChuDe.id);
+          this.thanhCong = "Xóa chủ đề thành công";
+          this.snackbar = true;
+          this.xoa = false;
+          this.getChuDe();
+        }
+        if (data == "bai_viet") {
+          await axios.delete("/baiviet/" + this.bai_viet_id);
+          this.thanhCong = "Xóa bài viết thành công";
+          this.snackbar = true;
+          this.xoa = false;
+        }
         this.getBaiViet();
+        this.getCauHoi()
       } catch (error) {
         console.log(error);
       }
-    }
+    },
+    cuaToi(id) {
+      return User.own(id);
+    },
+    editBaiViet(id) {
+      this.$router.push("/suabaiviet/" + id);
+    },
+    confirmXoaBaiViet(id) {
+      this.bai_viet_id = id;
+      this.xoa = true;
+      this.noidungxoa = "bai_viet";
+      this.tieuDeXoa = "Xóa bài viết";
+      this.noiDungXoa = "Bạn có chắc chắn muốn xóa bài viết này ?";
+    },
   }
 };
 </script>

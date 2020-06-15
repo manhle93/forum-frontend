@@ -14,8 +14,9 @@ class User {
     affterLogin(data) {
         const access_token = data.access_token
         const user_name = data.user_name
+        const quyen_id = data.quyen_id
         if (Token.isValid(access_token)) {
-            AppStorage.store(user_name, access_token)
+            AppStorage.store(user_name, access_token, quyen_id)
             window.location = '/'
         }
     }
@@ -50,6 +51,12 @@ class User {
     }
     own(user_id){
         return this.id() == user_id
+    }
+    quyenId(){
+        if(this.loggedIn()){
+            return AppStorage.getQuyen()
+        }
+        else return null
     }
 }
 
