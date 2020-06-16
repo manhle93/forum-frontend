@@ -52,17 +52,19 @@
             </span>
           </v-layout>
           <v-spacer />
-          <v-layout>
+          <!-- <v-layout>
             <v-btn small fab style="position: absolute; top 20px; right: 20px">
               <v-icon>mdi-message</v-icon>
             </v-btn>
-          </v-layout>
+          </v-layout> -->
         </v-layout>
         <div>
           <v-tabs v-model="tab" background-color="primary" dark>
             <v-tab key="tab-1">Bài viết</v-tab>
             <v-tab key="tab-2">Thành viên</v-tab>
             <v-tab key="tab-3">Gian hàng</v-tab>
+            <v-tab key="tab-4">Bán hàng</v-tab>
+            <v-tab key="tab-5">Mua hàng</v-tab>
           </v-tabs>
 
           <v-tabs-items v-model="tab">
@@ -74,7 +76,7 @@
                   <div style=" height: 200px">
                     <img
                       v-if="bv.anh_dai_dien"
-                      :src="bv.anh_dai_dien"
+                      :src="endPointImage + bv.anh_dai_dien"
                       style="width: 250px; max-height: 170px"
                     />
 
@@ -129,6 +131,7 @@
                 <v-col cols="6" v-for="us in users" :key="us.id">
                   <v-row no-gutters>
                     <v-col cols="5">
+                      <router-link :to="'/canhan/' + us.id">
                       <img
                         v-if="us.anh_dai_dien"
                         :src="endPointImage + us.anh_dai_dien"
@@ -139,12 +142,15 @@
                         src="../../assets/avatar.jpg"
                         style="border: 1px solid grey; height: auto; width: 90%; border-radius: 10px"
                       />
+                      </router-link>
                     </v-col>
                     <v-col cols="7">
+                       <router-link :to="'/canhan/' + us.id">
                       <div
                         class="mb-3"
                         style="font-size: 18px; color: #1F618D; font-weight: bold"
                       >{{us.name}}</div>
+                       </router-link>
                       <div class="mb-2" style="font-size: 14px; color: #1B2631; width: 100%">
                         <v-icon small>mdi-email</v-icon>
                         <span class="ml-1">Email: {{us.email}}</span>
@@ -199,25 +205,28 @@
                   </v-card>
                 </v-col>
                 <v-col xl="2" lg="3" md="4" sm="6" v-for="sanpham in sanPhams" :key="sanpham.id">
-                  <v-card class="mx-auto" max-width="250" style="border-radius: 15px;" @click="xemSanPham(sanpham.id)">
-                    <v-img
-                      class="white--text align-end"
-                      height="250px"
-                      v-if="sanpham.anh_dai_dien"
-                      :src="endPointImage + sanpham.anh_dai_dien"
-                    ></v-img>
-                    <v-img
-                      v-else
-                      class="white--text align-end"
-                      height="250px"
-                      src="https://salt.tikicdn.com/cache/280x280/ts/product/bc/23/09/76d09086ceaa3d0d9905fe56644e9e9e.jpg"
-                    ></v-img>
-                    <v-card-text class="pb-0">{{sanpham.ten_san_pham}}</v-card-text>
-                    <v-card-title class="pt-0">{{sanpham.gia_ban}} đ</v-card-title>
-                    <v-card-subtitle>Giá nhập: {{sanpham.gia_nhap}} đ</v-card-subtitle>
+                  <v-card class="mx-auto" max-width="250" style="border-radius: 15px;">
+                    <div @click="xemSanPham(sanpham.id)">
+                      <v-img
+                        class="white--text align-end"
+                        height="250px"
+                        v-if="sanpham.anh_dai_dien"
+                        :src="endPointImage + sanpham.anh_dai_dien"
+                      ></v-img>
+                      <v-img
+                        v-else
+                        class="white--text align-end"
+                        height="250px"
+                        src="../../assets/sanpham.jpg"
+                      ></v-img>
+                      <v-card-text class="pb-0">{{sanpham.ten_san_pham}}</v-card-text>
+                      <v-card-title class="pt-0">{{sanpham.gia_ban}} đ</v-card-title>
+                      <v-card-subtitle>Giá nhập: {{sanpham.gia_nhap}} đ</v-card-subtitle>
+                    </div>
                     <v-layout class="pr-3">
                       <v-btn color="orange" text>Xem</v-btn>
                       <v-spacer />
+
                       <v-btn small icon color="indigo" @click="showFormEditChuDe(sanpham)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
@@ -310,6 +319,8 @@
                 </v-card>
               </v-dialog>
             </v-tab-item>
+            <v-tab-item key="tab-4"><ban-hang></ban-hang></v-tab-item>
+            <v-tab-item key="tab-5"><mua-hang></mua-hang></v-tab-item>
           </v-tabs-items>
         </div>
       </v-card-text>
@@ -331,8 +342,11 @@
 </template>
 <script>
 import md from "marked";
+import BanHang from "./banhang";
+import MuaHang from "./muahang";
 
 export default {
+  components: { BanHang, MuaHang },
   data() {
     return {
       xoa: false,
@@ -452,7 +466,15 @@ export default {
       data.append("file", files[0]);
 
       var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      var dinhDangChoPhep = [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "tiff",
+        "BMP",
+        "webp"
+      ]; //các tập tin cho phép
       const isLt2M = files[0].size / 1024 / 1024 < 20;
       if (!isLt2M) {
         this.loiUpload = "Kích thước tập tin tối đa 20MB";
@@ -500,7 +522,15 @@ export default {
       data.append("file", files[0]);
 
       var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      var dinhDangChoPhep = [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "tiff",
+        "BMP",
+        "webp"
+      ]; //các tập tin cho phép
       const isLt2M = files[0].size / 1024 / 1024 < 20;
       if (!isLt2M) {
         this.loiUpload = "Kích thước tập tin tối đa 20MB";
@@ -556,7 +586,7 @@ export default {
         this.thanhCong = "Xóa sản phẩm thành công";
         this.getSanPham();
       }
-      this.xoa = false
+      this.xoa = false;
     },
     async confirmXoaSanPham(id) {
       this.xoa = true;
@@ -565,8 +595,8 @@ export default {
       this.tieuDeXoa = "Xóa sản phẩm";
       this.noiDungXoa = "Bạn có chắc chắn muốn xóa sản phẩm này?";
     },
-    xemSanPham(id){
-      this.$router.push('/sanpham/' + id)
+    xemSanPham(id) {
+      this.$router.push("/sanpham/" + id);
     }
   }
 };

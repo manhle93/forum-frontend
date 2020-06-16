@@ -57,7 +57,13 @@
                 >
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn small icon color="pink" @click="confirmXoaChuDe(chuDe.id)" v-if="loggedIn && quyen_id == 2">
+                <v-btn
+                  small
+                  icon
+                  color="pink"
+                  @click="confirmXoaChuDe(chuDe.id)"
+                  v-if="loggedIn && quyen_id == 2"
+                >
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </v-layout>
@@ -99,8 +105,8 @@
           <v-btn class="ml-3" @click="uploadAnh">
             <v-icon left dark>mdi-image-area</v-icon>Hình ảnh
           </v-btn>
-          <div style="width: 70px; height: 50px" class="ml-10 mb-4" v-if="form.anh_dai_dien">
-            <v-img :src="form.anh_dai_dien" width="100%"></v-img>
+          <div style="width: 70px; height: 50px" class="ml-10 mb-4" v-if="anhBaiViet">
+            <v-img :src="anhBaiViet" width="100%"></v-img>
           </div>
         </v-card-title>
         <v-card-text class="pt-3">
@@ -195,12 +201,14 @@
               </v-btn>
             </v-layout>
             <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
-            <div style="display: flex;  align-items: flex-end">
+            <div style="display: flex;  align-items: flex-end" @click="xemtrangCaNhan(hoi.user.id)">
               <div style="flex-grow: 1; height: 40px">
-                <v-list-item-avatar v-if="hoi.user" style="max-width: 100%; max-height: 100%">
-                  <v-img v-if="hoi.user.anh_dai_dien" :src="hoi.user.anh_dai_dien"></v-img>
-                  <v-img v-else src="../../assets/avatar.jpg"></v-img>
-                </v-list-item-avatar>
+                <router-link :to="cuaToi(hoi.user.id) ? '/trangcanhan':'/canhan/' + hoi.user.id">
+                  <v-list-item-avatar v-if="hoi.user" style="max-width: 100%; max-height: 100%">
+                    <v-img v-if="hoi.user.anh_dai_dien" :src="endPointImage + hoi.user.anh_dai_dien"></v-img>
+                    <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                  </v-list-item-avatar>
+                </router-link>
               </div>
               <div style="flex-grow: 50;" v-if="hoi.user">{{hoi.user.name}} {{hoi.created_at}}</div>
             </div>
@@ -227,7 +235,7 @@
           <div style=" height: 200px">
             <img
               v-if="bv.anh_dai_dien"
-              :src="bv.anh_dai_dien"
+              :src="endPointImage + bv.anh_dai_dien"
               style="width: 250px; max-height: 170px"
             />
 
@@ -263,12 +271,14 @@
               </v-btn>
             </v-layout>
             <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
-            <div style="display: flex;  align-items: flex-end">
+            <div style="display: flex;  align-items: flex-end" @click="xemtrangCaNhan(bv.user.id)">
               <div style="flex-grow: 1; height: 40px">
-                <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
-                  <v-img v-if="bv.user.anh_dai_dien" :src="endPointImage + bv.user.anh_dai_dien"></v-img>
-                  <v-img v-else src="@/assets/avatar.jpg"></v-img>
-                </v-list-item-avatar>
+                <router-link :to="cuaToi(bv.user.id) ? '/trangcanhan':'/canhan/' + bv.user.id">
+                  <v-list-item-avatar v-if="bv.user" style="max-width: 100%; max-height: 100%">
+                    <v-img v-if="bv.user.anh_dai_dien" :src="endPointImage + bv.user.anh_dai_dien"></v-img>
+                    <v-img v-else src="@/assets/avatar.jpg"></v-img>
+                  </v-list-item-avatar>
+                </router-link>
               </div>
               <div style="flex-grow: 50;" v-if="bv.user">{{bv.user.name}} {{bv.created_at}}</div>
             </div>
@@ -392,6 +402,7 @@ export default {
       bai_viet_id: null,
       quyen_id: null,
       anhChuDe: null,
+      anhBaiViet: null,
       xoa: false,
       tieuDeXoa: "",
       noiDungXoa: "",
@@ -493,6 +504,7 @@ export default {
         this.snackbar = true;
         this.resetBaiViet();
         this.getBaiViet();
+        this.getCauHoi()
       } catch (error) {
         console.log(error);
       }
@@ -505,6 +517,7 @@ export default {
         loai: "bai_viet",
         anh_dai_dien: null
       };
+      this.anhBaiViet = null;
     },
     parseText(text) {
       if (text) {
@@ -517,7 +530,7 @@ export default {
       data.append("file", files[0]);
 
       var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP", 'webp']; //các tập tin cho phép
       const isLt2M = files[0].size / 1024 / 1024 < 20;
       if (!isLt2M) {
         this.loiUpload = "Kích thước tập tin tối đa 20MB";
@@ -532,7 +545,8 @@ export default {
         axios
           .post("/uploadanh", data)
           .then(res => {
-            this.form.anh_dai_dien = ImageUrl + "/" + res.data;
+            this.form.anh_dai_dien = res.data;
+            this.anhBaiViet = ImageUrl + "/" + res.data;
           })
           .catch(error => {
             console.log(error);
@@ -545,7 +559,7 @@ export default {
       data.append("file", files[0]);
 
       var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP", 'webp']; //các tập tin cho phép
       const isLt2M = files[0].size / 1024 / 1024 < 20;
       if (!isLt2M) {
         this.loiUpload = "Kích thước tập tin tối đa 20MB";
@@ -560,7 +574,7 @@ export default {
         axios
           .post("/uploadanh", data)
           .then(res => {
-            this.formChuDe.anh_dai_dien = ImageUrl + "/" + res.data;
+            this.formChuDe.anh_dai_dien = res.data;
             this.anhChuDe = ImageUrl + "/" + res.data;
           })
           .catch(error => {
@@ -571,6 +585,7 @@ export default {
     showFormAddChuDe() {
       this.editChuDe = false;
       this.showFormChuDe = true;
+      this.anhChuDe = null;
       this.formChuDe = {
         ten: "",
         anh_dai_dien: null,
@@ -603,6 +618,7 @@ export default {
         this.formChuDe.mo_ta = data.data.mo_ta;
         this.formChuDe.anh_dai_dien = data.data.anh_dai_dien;
         this.formChuDe.id = data.data.id;
+        this.anhChuDe = ImageUrl + "/" + data.data.anh_dai_dien;
       } catch (error) {
         console.log(error);
       }
@@ -642,7 +658,7 @@ export default {
           this.xoa = false;
         }
         this.getBaiViet();
-        this.getCauHoi()
+        this.getCauHoi();
       } catch (error) {
         console.log(error);
       }
@@ -660,6 +676,12 @@ export default {
       this.tieuDeXoa = "Xóa bài viết";
       this.noiDungXoa = "Bạn có chắc chắn muốn xóa bài viết này ?";
     },
+    xemtrangCaNhan(id) {
+      if(cuaToi(id)){
+        this.$router.push("/trangcanhan");
+      }
+      this.$router.push("/canhan/" + id);
+    }
   }
 };
 </script>

@@ -30,10 +30,12 @@
       <v-list-item>
         <v-list-item>
           <div>
-            <v-list-item-avatar>
-              <v-img v-if="baiViet.user.anh_dai_dien" :src="endPoint + baiViet.user.anh_dai_dien"></v-img>
-              <v-img v-else src="../../assets/avatar.jpg"></v-img>
-            </v-list-item-avatar>
+            <router-link :to="'/canhan/' +baiViet.user.id ">
+              <v-list-item-avatar>
+                <v-img v-if="baiViet.user.anh_dai_dien" :src="endPoint + baiViet.user.anh_dai_dien"></v-img>
+                <v-img v-else src="../../assets/avatar.jpg"></v-img>
+              </v-list-item-avatar>
+            </router-link>
           </div>
           <v-list-item-content>
             <v-list-item-title v-text="baiViet.user.name"></v-list-item-title>
@@ -41,7 +43,7 @@
           </v-list-item-content>
         </v-list-item>
       </v-list-item>
-      <img :src="baiViet.anh_dai_dien" style="width: 100%; border-radius: 20px" />
+      <img v-if="baiViet.anh_dai_dien" :src="endPoint + baiViet.anh_dai_dien" style="width: 100%; border-radius: 20px" />
       <v-card-text v-html="baiViet.noi_dung" class="pb-12 pb-8"></v-card-text>
       <v-layout style="align-items: baseline">
         <v-btn
@@ -70,16 +72,19 @@
       </v-layout>
 
       <v-btn dark class="mb-3 ml-3">
-        <v-icon left>mdi-message</v-icon>{{binhLuans.length}} bình luận
+        <v-icon left>mdi-message</v-icon>
+        {{binhLuans.length}} bình luận
       </v-btn>
     </v-card>
     <v-card class="mt-2" v-if="loggedIn" style="border-radius: 20px">
       <v-row>
         <v-col cols="1">
-          <v-list-item-avatar class="ml-8">
-            <v-img v-if="user.anh_dai_dien" :src="endPoint + user.anh_dai_dien"></v-img>
-            <v-img v-else src="../../assets/avatar.jpg"></v-img>
-          </v-list-item-avatar>
+          <router-link to="/trangcanhan">
+            <v-list-item-avatar class="ml-8">
+              <v-img v-if="user.anh_dai_dien" :src="endPoint + user.anh_dai_dien"></v-img>
+              <v-img v-else src="../../assets/avatar.jpg"></v-img>
+            </v-list-item-avatar>
+          </router-link>
         </v-col>
         <v-col cols="10">
           <form ref="form" class="mt-3">
@@ -103,20 +108,28 @@
     <v-card class="mt-1" style="border-radius: 15px">
       <v-row v-for="binhluan in binhLuans" :key="binhluan.id">
         <v-col cols="1">
-          <v-list-item-avatar class="ml-8">
-            <v-img v-if="binhluan.user.anh_dai_dien" :src="endPoint + binhluan.user.anh_dai_dien"></v-img>
-            <v-img v-else src="../../assets/avatar.jpg"></v-img>
-          </v-list-item-avatar>
+          <router-link
+            :to="binhLuanCuaToi(binhluan.user.id)?'/trangcanhan': '/canhan/' + binhluan.user.id"
+          >
+            <v-list-item-avatar class="ml-8">
+              <v-img v-if="binhluan.user.anh_dai_dien" :src="endPoint + binhluan.user.anh_dai_dien"></v-img>
+              <v-img v-else src="../../assets/avatar.jpg"></v-img>
+            </v-list-item-avatar>
+          </router-link>
         </v-col>
         <v-col cols="10">
           <div
             style="width: 100%; border-radius: 25px; min-height: 100px; background-color: #80808036"
           >
             <v-layout class="ml-3">
-              <span
-                class="mt-2"
-                style="color: #1F618D; font-size: 18px; font-weight: bold"
-              >{{binhluan.user.name}}</span>
+              <router-link
+                :to="binhLuanCuaToi(binhluan.user.id)?'/trangcanhan': '/canhan/' + binhluan.user.id"
+              >
+                <span
+                  class="mt-2"
+                  style="color: #1F618D; font-size: 18px; font-weight: bold"
+                >{{binhluan.user.name}}</span>
+              </router-link>
               <span class="ml-6 mt-2">{{binhluan.created_at}}</span>
               <v-spacer />
               <v-btn
@@ -167,6 +180,7 @@ export default {
   data: () => ({
     loggedIn: false,
     baiViet: {
+      anh_dai_dien: null,
       chu_de: {
         ten: ""
       },
@@ -306,8 +320,8 @@ export default {
   },
   created() {
     this.loggedIn = User.loggedIn();
-    if(this.loggedIn){
-      this.me()
+    if (this.loggedIn) {
+      this.me();
     }
     this.quyen_id = User.quyenId();
     this.getData();

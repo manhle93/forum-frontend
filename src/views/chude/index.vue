@@ -3,7 +3,7 @@
     <v-row justify="space-around">
       <v-img
         v-if="chuDe.anh_dai_dien"
-        :src="chuDe.anh_dai_dien"
+        :src="endPointImage + chuDe.anh_dai_dien"
         aspect-ratio="1.7"
         style="max-height: 400px"
       ></v-img>
@@ -26,7 +26,7 @@
           <div style=" height: 200px">
             <img
               v-if="hoi.anh_dai_dien"
-              :src="hoi.anh_dai_dien"
+              :src="endPointImage + hoi.anh_dai_dien"
               style="width: 250px; max-height: 170px"
             />
 
@@ -40,16 +40,13 @@
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
                 <v-list-item-avatar v-if="hoi.user" style="max-width: 100%; max-height: 100%">
-                  <v-img v-if="hoi.user.anh_dai_dien" :src="hoi.user.anh_dai_dien"></v-img>
+                  <v-img v-if="hoi.user.anh_dai_dien" :src="endPointImage + hoi.user.anh_dai_dien"></v-img>
                   <v-img v-else src="../../assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
               </div>
               <div style="flex-grow: 50;" v-if="hoi.user">{{hoi.user.name}} {{hoi.created_at}}</div>
             </div>
           </div>
-        </div>
-        <div style="text-align: center">
-          <v-btn color="primary">Xem thêm</v-btn>
         </div>
       </v-card>
     </v-container>
@@ -61,7 +58,7 @@
           <div style=" height: 200px">
             <img
               v-if="bv.anh_dai_dien"
-              :src="bv.anh_dai_dien"
+              :src="endPointImage + bv.anh_dai_dien"
               style="width: 250px; max-height: 170px"
             />
 
@@ -83,9 +80,6 @@
             </div>
           </div>
         </div>
-        <div style="text-align: center">
-          <v-btn color="primary">Xem thêm</v-btn>
-        </div>
       </v-card>
     </v-container>
   </v-container>
@@ -100,13 +94,15 @@ export default {
         user: { name: "" }
       },
       baiViet: [],
-      hoiDap: []
+      hoiDap: [],
+      endPointImage: ""
     };
   },
   created() {
     this.getChuDe();
     this.getBaiViet();
     this.getCauHoi();
+    this.endPointImage = ImageUrl + "/";
   },
   methods: {
     async getChuDe() {

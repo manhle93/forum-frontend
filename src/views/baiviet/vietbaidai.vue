@@ -44,7 +44,7 @@
             </v-btn>
             <img
               v-if="form.anh_dai_dien"
-              :src="form.anh_dai_dien"
+              :src="anh"
               style="width: 100px; height: 100px; border: 1px solid grey; border-radius: 7px"
               class="ml-6"
             />
@@ -75,6 +75,7 @@ export default {
       noi_dung: "",
       anh_dai_dien: null
     },
+    anh: null,
     snackbar: false,
     uploadLoi: false,
     loiUpload: "",
@@ -129,7 +130,7 @@ export default {
       data.append("file", files[0]);
 
       var filePath = files[0].name.split(".").pop(); //lấy định dạng file
-      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP"]; //các tập tin cho phép
+      var dinhDangChoPhep = ["jpg", "jpeg", "png", "gif", "tiff", "BMP", 'webp']; //các tập tin cho phép
       const isLt2M = files[0].size / 1024 / 1024 < 20;
       if (!isLt2M) {
         this.loiUpload = "Kích thước tập tin tối đa 20MB"
@@ -144,7 +145,8 @@ export default {
         axios
           .post("/uploadanh", data)
           .then(res => {
-            this.form.anh_dai_dien = ImageUrl + '/' + res.data;
+            this.form.anh_dai_dien = res.data;
+            this.anh =  ImageUrl + '/' + res.data;
             console.log(this.form.anh_dai_dien, res);
           })
           .catch(error => {

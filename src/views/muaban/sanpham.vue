@@ -4,8 +4,13 @@
     <v-card class="mt-6">
       <v-row>
         <v-col cols="5">
-          <div style="background-color: white; width: 100%" class="pt-4 pl-6">
-            <img :src="endPoint + sanPham.anh_dai_dien" style="max-height: 300px; max-width: 250px" />
+          <div style="background-color: white; width: 100%; text-align: center" class="pt-4 pl-6">
+            <img
+              v-if="sanPham.anh_dai_dien"
+              :src="endPoint + sanPham.anh_dai_dien"
+              style="width: 100%"
+            />
+            <img v-else src="../../assets/sanpham.jpg" style="width: 100%" />
           </div>
         </v-col>
         <v-col cols="7">
@@ -14,9 +19,10 @@
             <br />
             <h2>{{sanPham.gia_ban}} đ</h2>
             <div class="mt-2 mb-4">{{sanPham.mo_ta}}</div>
-            <v-btn>Đặt hàng</v-btn>
+            <v-btn :disabled="!loggedIn || binhLuanCuaToi(sanPham.user_id)" @click="showDatHang">Đặt hàng</v-btn>
             <div style="display: flex;  align-items: flex-end" class="mt-6 mb-6">
               <div style="flex-grow: 1; height: 40px">
+                <router-link :to="'/canhan/' + sanPham.user.id">
                 <v-list-item-avatar style="max-width: 100%; max-height: 100%">
                   <v-img
                     v-if="sanPham.user.anh_dai_dien"
@@ -24,9 +30,12 @@
                   ></v-img>
                   <v-img v-else src="../../assets/avatar.jpg"></v-img>
                 </v-list-item-avatar>
+                </router-link>
               </div>
               <div style="flex-grow: 50;">
+                <router-link :to="'/canhan/' + sanPham.user.id">
                 <strong style="font-size: 18px">{{sanPham.user.name}}</strong>
+                </router-link>
               </div>
             </div>
           </div>
@@ -97,6 +106,63 @@
         </v-col>
       </v-row>
     </v-card>
+
+    <v-dialog v-model="showFormDatHang" width="500">
+      <v-card>
+        <form ref="form">
+          <v-card-title class="headline grey lighten-2" primary-title>Cập nhật sản phẩm</v-card-title>
+          <v-card-text class="mt-6">
+            <span>Tên người mua hàng</span>
+            <v-text-field
+              class="mt-3"
+              v-model="formDatHang.ten_nguoi_mua"
+              placeholder="Họ và tên người mua hàng"
+              solo
+              :rules="tenSanPhamRules"
+            ></v-text-field>
+            <v-row>
+              <v-col cols="6">
+                <span>Số điện thoại</span>
+                <v-text-field
+                  class="mt-3"
+                  v-model="formDatHang.so_dien_thoai"
+                  placeholder="Số điện thoại liên hệ"
+                  solo
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <span>Số lượng mua</span>
+                <v-text-field
+                  type="number"
+                  class="mt-3"
+                  v-model="formDatHang.so_luong"
+                  placeholder="Số lượng mua"
+                  solo
+                  :min="1"
+                ></v-text-field>
+                <span
+                  style="font-size: 18px"
+                >Tổng tiền: {{sanPham.gia_ban * formDatHang.so_luong}} đ</span>
+              </v-col>
+            </v-row>
+            <span>Địa chỉ nhận hàng</span>
+            <v-textarea
+              class="mt-3"
+              v-model="formDatHang.dia_chi"
+              placeholder="Nhập chi tiết địa chỉ nhận hàng"
+              solo
+              :rules="diaChiRules"
+            ></v-textarea>
+          </v-card-text>
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="datHang">Đặt hàng</v-btn>
+          </v-card-actions>
+        </form>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -117,11 +183,27 @@ export default {
     binhLuans: [],
     snackbar: false,
     sanPham: {
-        user: {
-            anh_dai_dien: ""
-        }
+      user: {
+        anh_dai_dien: ""
+      }
     },
-    quyen_id: null
+    quyen_id: null,
+    showFormDatHang: false,
+    formDatHang: {
+      san_pham_id: null,
+      ten_nguoi_mua: "",
+      so_dien_thoai: "",
+      so_luong: 1,
+      dia_chi: ""
+    },
+    tenSanPhamRules: [
+      v => !!v || "Tên người mua không thể bỏ trống",
+      v => (v && v.length >= 3) || "Tên sản phẩm tối thiểu 3 ký tự"
+    ],
+    diaChiRules: [
+      v => !!v || "Địa chỉ không thể bỏ trống",
+      v => (v && v.length >= 5) || "Địa chỉ tối thiểu 3 ký tự"
+    ]
   }),
   watch: {
     "form.noi_dung": function() {
@@ -190,6 +272,29 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    async datHang() {
+      try {
+        this.formDatHang.tong_tien = this.sanPham.gia_ban * this.formDatHang.so_luong
+        let data = await axios.post('dathang', this.formDatHang);
+        this.showFormDatHang = false
+        this.thanhCong = "Đặt hàng thành công"
+        this.snackbar = true
+      } catch (error) {
+        
+      }
+    },
+    showDatHang() {
+      this.showFormDatHang = true;
+      this.formDatHang = {
+        san_pham_id: null,
+        ten_nguoi_mua: "",
+        so_dien_thoai: "",
+        so_luong: 1,
+        dia_chi: "",
+        tong_tien: null
+      };
+      this.formDatHang.san_pham_id = this.$route.params.id;
     }
   }
 };

@@ -14,9 +14,11 @@
       </v-carousel-item>
     </v-carousel>
     <br />
-    <div style="text-align: center; font-size: 30px; color: #2980B9; font-weight: bold">Danh sách sản phẩm</div>
+    <div
+      style="text-align: center; font-size: 30px; color: #2980B9; font-weight: bold"
+    >Danh sách sản phẩm</div>
     <v-row>
-      <v-col xl="2" lg="3" md="4" sm="6" v-for="sanpham in sanPhams" :key="sanpham.id">
+      <v-col xl="2" lg="3" md="4" sm="6" v-for="sanpham in sanPhams" :key="sanpham.id" class="mt-3">
         <v-card
           class="mx-auto"
           max-width="250"
@@ -33,13 +35,14 @@
             v-else
             class="white--text align-end"
             height="250px"
-            src="https://salt.tikicdn.com/cache/280x280/ts/product/bc/23/09/76d09086ceaa3d0d9905fe56644e9e9e.jpg"
+            src="../../assets/sanpham.jpg"
           ></v-img>
           <v-card-text class="pb-0">{{sanpham.ten_san_pham}}</v-card-text>
           <v-card-title class="pt-0">{{sanpham.gia_ban}} đ</v-card-title>
         </v-card>
       </v-col>
     </v-row>
+    <v-pagination class="mt-6" v-model="page" :length="total" circle @input="PaginateData"></v-pagination>
   </v-container>
 </template>
 <script>
@@ -47,7 +50,9 @@ export default {
   data() {
     return {
       sanPhams: [],
-      endPointImage: '',
+      page: 1,
+      total: 1,
+      endPointImage: "",
       items: [
         {
           src: "bn3.jpg"
@@ -66,13 +71,25 @@ export default {
     this.endPointImage = ImageUrl + "/";
   },
   methods: {
+    async PaginateData() {
+      try {
+        let data = await axios.get("/danhsachsanpham?page=" + this.page);
+        this.sanPhams = data.data.data.data;
+        this.page = data.data.data.current_page;
+        this.total = data.data.data.last_page;
+      } catch (error) {
+        console.log(error);
+      }
+    },
     async getSanPham() {
       let data = await axios.get("danhsachsanpham");
       this.sanPhams = data.data.data.data;
+      this.page = data.data.data.current_page;
+      this.total = data.data.data.last_page;
       console.log(data);
     },
-    xemSanPham(id){
-        this.$router.push('/sanpham/' + id)
+    xemSanPham(id) {
+      this.$router.push("/sanpham/" + id);
     }
   }
 };

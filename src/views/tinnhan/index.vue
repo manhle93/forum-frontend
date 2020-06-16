@@ -45,7 +45,7 @@
                     alt="John"
                     style="width: 100%; border-radius: 50%"
                   />-->
-                  
+
                   <v-img
                     v-if="userNhan.anh_dai_dien"
                     :src="endPointImage + userNhan.anh_dai_dien"
@@ -166,6 +166,7 @@ export default {
     this.getTinNhan();
     this.getUserInfo();
     this.listening();
+    this.me();
   },
   watch: {
     "form.noi_dung": function(val) {
@@ -178,11 +179,21 @@ export default {
   },
   methods: {
     chonNguoiDung(data) {
-      this.tinNhan = []
+      this.tinNhan = [];
       this.$router.push("/tinnhan/" + data.id);
       this.userNhan = data;
       this.getTinNhan();
       this.listening();
+    },
+    async me() {
+      try {
+        let data = await axios.get("/userinfo");
+        if (data.data && data.data.id == this.$route.params.id) {
+          this.$router.push("/");
+        }
+      } catch (error) {
+        console.log("chuadangnhap");
+      }
     },
     async getUser() {
       try {
@@ -227,8 +238,11 @@ export default {
     },
     listening() {
       Echo.channel("tinnhan").listen("TinNhanEvent", e => {
-        if (e.user_nhan_id == User.id() && e.user_gui_id == this.$route.params.id) {
-          this.getTinNhan()
+        if (
+          e.user_nhan_id == User.id() &&
+          e.user_gui_id == this.$route.params.id
+        ) {
+          this.getTinNhan();
         }
       });
     }

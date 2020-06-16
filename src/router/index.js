@@ -46,7 +46,7 @@ Vue.use(VueRouter)
     component: () => import("../views/trangcanhan/index"),
   },
   {
-    path: '/canhan:id',
+    path: '/canhan/:id',
     name: 'viewtrangcanhan',
     component: () => import("../views/trangcanhan/viewtrangcanhan"),
   },
