@@ -36,16 +36,23 @@
               <span style="color: green" v-if="item.trang_thai == 'hoan_thanh'">Hoàn thành</span>
             </td>
             <td>
-              <v-btn
-                color="pink"
-                fab
-                x-small
-                dark
-                v-if="item.trang_thai == 'moi_tao'"
-                @click="huyDon(item.id)"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="pink"
+                    fab
+                    x-small
+                    v-bind="attrs"
+                    v-on="on"
+                    dark
+                    v-if="item.trang_thai == 'moi_tao'"
+                    @click="huyDon(item.id)"
+                  >
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </template>
+                <span>Hủy đơn</span>
+              </v-tooltip>
             </td>
           </tr>
         </tbody>
@@ -75,7 +82,7 @@ export default {
       this.getDonHang();
       this.thanhCong = "Đã hủy đơn hàng";
       this.snackbar = true;
-    },
+    }
   }
 };
 </script>

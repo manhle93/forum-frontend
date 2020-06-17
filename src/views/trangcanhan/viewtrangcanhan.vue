@@ -117,7 +117,6 @@
                     ></v-img>
                     <v-card-text class="pb-0">{{sanpham.ten_san_pham}}</v-card-text>
                     <v-card-title class="pt-0">{{sanpham.gia_ban}} đ</v-card-title>
-                    <v-card-subtitle>Giá nhập: {{sanpham.gia_nhap}} đ</v-card-subtitle>
                     <v-layout class="pr-3">
                       <v-btn color="orange" text>Xem</v-btn>
                       <v-spacer />

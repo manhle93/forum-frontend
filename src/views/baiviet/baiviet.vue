@@ -179,6 +179,10 @@ import md from "marked";
 export default {
   data: () => ({
     loggedIn: false,
+    user: {
+      name: "",
+      anh_dai_dien: null
+    },
     baiViet: {
       anh_dai_dien: null,
       chu_de: {

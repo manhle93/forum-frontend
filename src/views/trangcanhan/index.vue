@@ -177,7 +177,7 @@
                         <v-icon small>mdi-check</v-icon>
                         <span class="ml-1">Quyền: {{us.quyen.mo_ta}}</span>
                       </div>
-                      <router-link :to="'tinnhan/' + us.id">
+                      <router-link :to="'/tinnhan/' + us.id">
                         <v-btn class="mx-2" fab dark small color="primary">
                           <v-icon dark>mdi-message</v-icon>
                         </v-btn>

@@ -65,6 +65,11 @@ Vue.use(VueRouter)
     name: 'muasam',
     component: () => import("../views/muaban/index"),
   },
+  {
+    path: '/timkiem/:key',
+    name: 'muasam',
+    component: () => import("../views/timkiem/index"),
+  },
 ]
 
 const router = new VueRouter({

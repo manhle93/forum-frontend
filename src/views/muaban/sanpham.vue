@@ -16,25 +16,41 @@
         <v-col cols="7">
           <div style="width: 100%;" class="pt-4 pr-4">
             <h2>{{sanPham.ten_san_pham}}</h2>
+            <div style="float:right">
+              <v-btn
+                v-if="quyen_id == 2"
+                class="mx-2"
+                fab
+                dark
+                small
+                color="pink"
+                @click="confirmXoaSanPham"
+              >
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </div>
             <br />
             <h2>{{sanPham.gia_ban}} đ</h2>
             <div class="mt-2 mb-4">{{sanPham.mo_ta}}</div>
-            <v-btn :disabled="!loggedIn || binhLuanCuaToi(sanPham.user_id)" @click="showDatHang">Đặt hàng</v-btn>
+            <v-btn
+              :disabled="!loggedIn || binhLuanCuaToi(sanPham.user_id)"
+              @click="showDatHang"
+            >Đặt hàng</v-btn>
             <div style="display: flex;  align-items: flex-end" class="mt-6 mb-6">
               <div style="flex-grow: 1; height: 40px">
                 <router-link :to="'/canhan/' + sanPham.user.id">
-                <v-list-item-avatar style="max-width: 100%; max-height: 100%">
-                  <v-img
-                    v-if="sanPham.user.anh_dai_dien"
-                    :src="endPoint + sanPham.user.anh_dai_dien"
-                  ></v-img>
-                  <v-img v-else src="../../assets/avatar.jpg"></v-img>
-                </v-list-item-avatar>
+                  <v-list-item-avatar style="max-width: 100%; max-height: 100%">
+                    <v-img
+                      v-if="sanPham.user.anh_dai_dien"
+                      :src="endPoint + sanPham.user.anh_dai_dien"
+                    ></v-img>
+                    <v-img v-else src="../../assets/avatar.jpg"></v-img>
+                  </v-list-item-avatar>
                 </router-link>
               </div>
               <div style="flex-grow: 50;">
                 <router-link :to="'/canhan/' + sanPham.user.id">
-                <strong style="font-size: 18px">{{sanPham.user.name}}</strong>
+                  <strong style="font-size: 18px">{{sanPham.user.name}}</strong>
                 </router-link>
               </div>
             </div>
@@ -163,6 +179,20 @@
         </form>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="xoa" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>Xóa sản phẩm</v-card-title>
+        <v-card-text style="font-size: 18px;">Bạn có chắc chắn múa xóa sản phẩm này</v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
+          <v-btn color="primary" text @click="xoaSanPham()">Đồng ý</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -187,6 +217,7 @@ export default {
         anh_dai_dien: ""
       }
     },
+    xoa: false,
     quyen_id: null,
     showFormDatHang: false,
     formDatHang: {
@@ -275,14 +306,13 @@ export default {
     },
     async datHang() {
       try {
-        this.formDatHang.tong_tien = this.sanPham.gia_ban * this.formDatHang.so_luong
-        let data = await axios.post('dathang', this.formDatHang);
-        this.showFormDatHang = false
-        this.thanhCong = "Đặt hàng thành công"
-        this.snackbar = true
-      } catch (error) {
-        
-      }
+        this.formDatHang.tong_tien =
+          this.sanPham.gia_ban * this.formDatHang.so_luong;
+        let data = await axios.post("dathang", this.formDatHang);
+        this.showFormDatHang = false;
+        this.thanhCong = "Đặt hàng thành công";
+        this.snackbar = true;
+      } catch (error) {}
     },
     showDatHang() {
       this.showFormDatHang = true;
@@ -295,6 +325,18 @@ export default {
         tong_tien: null
       };
       this.formDatHang.san_pham_id = this.$route.params.id;
+    },
+    confirmXoaSanPham(){
+      this.xoa = true
+    },
+   async xoaSanPham(){
+     await axios.delete('sanpham/'+ this.$route.params.id);
+     this.xoa = false;
+     this.thanhCong = "Xóa sản phẩm thành công"
+     this.snackbar = true
+     setTimeout(()=> {
+       this.$router.push('/muasam')
+     }, 1000)
     }
   }
 };

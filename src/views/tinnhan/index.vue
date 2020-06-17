@@ -40,22 +40,18 @@
                 v-if="!tinToiGui(item.user_gui_id)"
               >
                 <div style="float: left; height: 35px;width: 35px;">
-                  <!-- <img
-                    src="https://cdn.vuetifyjs.com/images/john.jpg"
-                    alt="John"
-                    style="width: 100%; border-radius: 50%"
-                  />-->
-
-                  <v-img
-                    v-if="userNhan.anh_dai_dien"
-                    :src="endPointImage + userNhan.anh_dai_dien"
-                    style="width:100%; border-radius: 50%"
-                  ></v-img>
-                  <v-img
-                    v-else
-                    src="../../assets/avatar.jpg"
-                    style="width: 100%; border-radius: 50%"
-                  ></v-img>
+                  <v-avatar size="30">
+                    <img
+                      v-if="userNhan.anh_dai_dien"
+                      :src="endPointImage + userNhan.anh_dai_dien"
+                      style="width:100%; border-radius: 50%"
+                    />
+                    <v-img
+                      v-else
+                      src="../../assets/avatar.jpg"
+                      style="width: 100%; border-radius: 50%"
+                    ></v-img>
+                  </v-avatar>
                 </div>
                 <div
                   style="max-width: 75%; border-radius: 8px; background-color: #F9E79F; word-wrap: break-word; float: left; color: black"
@@ -192,7 +188,7 @@ export default {
           this.$router.push("/");
         }
       } catch (error) {
-        console.log("chuadangnhap");
+        this.$router.push("/");
       }
     },
     async getUser() {

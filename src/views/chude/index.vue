@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-snackbar top color="success" v-model="snackbar">{{thanhCong}}</v-snackbar>
     <v-row justify="space-around">
       <v-img
         v-if="chuDe.anh_dai_dien"
@@ -33,9 +34,34 @@
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
           <div style="height: auto; padding-left: 30px">
-            <router-link :to="'/baiviet/'+ hoi.id">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
-            </router-link>
+            <v-layout>
+              <router-link :to="'/baiviet/'+ hoi.id">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{hoi.tieu_de}}</div>
+              </router-link>
+              <v-spacer />
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="cyan"
+                @click="editBaiViet(hoi.id)"
+                v-if="cuaToi(hoi.user_id)"
+              >
+                <v-icon dark>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="pink"
+                @click="confirmXoaBaiViet(hoi.id)"
+                v-if="cuaToi(hoi.user_id) || quyen_id == 2"
+              >
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </v-layout>
             <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
@@ -64,10 +90,35 @@
 
             <img v-else src="../../assets/baiviet.png" style="width: 250px; max-height: 200px" />
           </div>
-          <div style="height: auto; padding-left: 30px">
-            <router-link :to="'/baiviet/'+ bv.id">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
-            </router-link>
+          <div style="height: auto; padding-left: 30px; width: 100%">
+            <v-layout>
+              <router-link :to="'/baiviet/'+ bv.id">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px">{{bv.tieu_de}}</div>
+              </router-link>
+              <v-spacer />
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="cyan"
+                @click="editBaiViet(bv.id)"
+                v-if="cuaToi(bv.user_id)"
+              >
+                <v-icon dark>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                x-small
+                class="mx-2"
+                fab
+                dark
+                color="pink"
+                @click="confirmXoaBaiViet(bv.id)"
+                v-if="cuaToi(bv.user_id) || quyen_id == 2"
+              >
+                <v-icon dark>mdi-delete</v-icon>
+              </v-btn>
+            </v-layout>
             <div style="margin-bottom: 15px" v-html="parseText(bv.noi_dung)"></div>
             <div style="display: flex;  align-items: flex-end">
               <div style="flex-grow: 1; height: 40px">
@@ -82,6 +133,19 @@
         </div>
       </v-card>
     </v-container>
+    <v-dialog v-model="xoa" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>{{tieuDeXoa}}</v-card-title>
+        <v-card-text style="font-size: 18px;">{{noiDungXoa}}</v-card-text>
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="xoa = false">Hủy</v-btn>
+          <v-btn color="primary" text @click="xoaNoiDung(noidungxoa)">Đồng ý</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -95,10 +159,18 @@ export default {
       },
       baiViet: [],
       hoiDap: [],
-      endPointImage: ""
+      endPointImage: "",
+      quyen_id: null,
+      xoa: false,
+      bai_viet_id: null,
+      tieuDeXoa: "",
+      noiDungXoa: "",
+      thanhCong: "",
+      snackbar: false
     };
   },
   created() {
+    this.quyen_id = User.quyenId();
     this.getChuDe();
     this.getBaiViet();
     this.getCauHoi();
@@ -129,6 +201,33 @@ export default {
       if (text) {
         return md.parse(text);
       } else return null;
+    },
+    cuaToi(id) {
+      return User.own(id);
+    },
+    editBaiViet(id) {
+      this.$router.push("/suabaiviet/" + id);
+    },
+    async xoaNoiDung(data) {
+      try {
+        if (data == "bai_viet") {
+          await axios.delete("/baiviet/" + this.bai_viet_id);
+          this.thanhCong = "Xóa bài viết thành công";
+          this.snackbar = true;
+          this.xoa = false;
+        }
+        this.getBaiViet();
+        this.getCauHoi();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    confirmXoaBaiViet(id) {
+      this.bai_viet_id = id;
+      this.xoa = true;
+      this.noidungxoa = "bai_viet";
+      this.tieuDeXoa = "Xóa bài viết";
+      this.noiDungXoa = "Bạn có chắc chắn muốn xóa bài viết này ?";
     }
   }
 };

@@ -36,38 +36,59 @@
               <span style="color: green" v-if="item.trang_thai == 'hoan_thanh'">Hoàn thành</span>
             </td>
             <td>
-              <v-btn
-                color="pink"
-                fab
-                x-small
-                dark
-                v-if="item.trang_thai == 'moi_tao' || item.trang_thai == 'nhan_don'"
-                @click="huyDon(item.id)"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-              <v-btn
-                class="ml-2"
-                color="primary"
-                fab
-                x-small
-                dark
-                v-if="item.trang_thai == 'moi_tao'"
-                @click="nhanDon(item.id)"
-              >
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <v-btn
-                class="ml-2"
-                color="success"
-                fab
-                x-small
-                dark
-                v-if="item.trang_thai == 'nhan_don'"
-                @click="hoanThanh(item.id)"
-              >
-                <v-icon>mdi-check</v-icon>
-              </v-btn>
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="pink"
+                    fab
+                    x-small
+                    v-bind="attrs"
+                    v-on="on"
+                    dark
+                    v-if="item.trang_thai == 'moi_tao' || item.trang_thai == 'nhan_don'"
+                    @click="huyDon(item.id)"
+                  >
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </template>
+                <span>Hủy đơn</span>
+              </v-tooltip>
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    class="ml-2"
+                    color="primary"
+                    fab
+                    v-bind="attrs"
+                    v-on="on"
+                    x-small
+                    dark
+                    v-if="item.trang_thai == 'moi_tao'"
+                    @click="nhanDon(item.id)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </template>
+                <span>Duyệt đơn, giao hàng</span>
+              </v-tooltip>
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    class="ml-2"
+                    color="success"
+                    fab
+                    v-bind="attrs"
+                    v-on="on"
+                    x-small
+                    dark
+                    v-if="item.trang_thai == 'nhan_don'"
+                    @click="hoanThanh(item.id)"
+                  >
+                    <v-icon>mdi-check</v-icon>
+                  </v-btn>
+                </template>
+                <span>Hoàn thành đơn hàng</span>
+              </v-tooltip>
             </td>
           </tr>
         </tbody>
