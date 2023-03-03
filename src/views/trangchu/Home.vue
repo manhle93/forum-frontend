@@ -161,7 +161,7 @@
       <div style="font-size: 20px; color: #2980B9; font-weight: bold">Câu hỏi cần bạn giúp</div>
       <br />
       <v-card style="border-radius: 20px; padding: 40px">
-        <div style="display: flex;" v-for="hoi in hoiDap" :key="hoi.id">
+        <div style="display: flex; margin-bottom: 50px;" v-for="hoi in hoiDap" :key="hoi.id">
           <div style=" height: 200px">
             <img
               v-if="hoi.anh_dai_dien"
@@ -200,7 +200,7 @@
                 <v-icon dark>mdi-delete</v-icon>
               </v-btn>
             </v-layout>
-            <div style="margin-bottom: 15px">{{hoi.noi_dung}}</div>
+            <div style="margin-bottom: 15px">{{parseText(hoi.noi_dung)}}</div>
             <div style="display: flex;  align-items: flex-end" @click="xemtrangCaNhan(hoi.user.id)">
               <div style="flex-grow: 1; height: 40px">
                 <router-link :to="cuaToi(hoi.user.id) ? '/trangcanhan':'/canhan/' + hoi.user.id">
@@ -231,7 +231,7 @@
       <div style="font-size: 20px; color: #2980B9; font-weight: bold">Bài viết mới cập nhật</div>
       <br />
       <v-card style="border-radius: 20px; padding: 40px">
-        <div style="display: flex;" v-for="bv in baiViet" :key="bv.id">
+        <div style="display: flex; margin-bottom: 50px;" v-for="bv in baiViet" :key="bv.id">
           <div style=" height: 200px">
             <img
               v-if="bv.anh_dai_dien"
@@ -520,8 +520,12 @@ export default {
       this.anhBaiViet = null;
     },
     parseText(text) {
-      if (text) {
-        return md.parse(text);
+      let content = '';
+      if(text && text.length > 300){
+        content = text.substring(0, 300)
+      }
+      if (content) {
+        return md.parse(content);
       } else return null;
     },
     handleChange(e) {
